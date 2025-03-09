@@ -13,3 +13,10 @@ MCP4Go is a Go implementation of the Model Context Protocol (MCP), designed to s
 - Pluggable architecture for custom extensions
 - Comprehensive documentation and examples
 - Production-ready with robust error handling
+
+## Installation
+
+MCP4Go requires Go 1.18 or later. Install it using Go modules:
+
+```go
+go get github.com/mcp4go/mcp4go
