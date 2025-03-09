@@ -9,3 +9,16 @@ coverage:
         target: auto #default
         threshold: 0%
         base: auto
+    patch:
+      default:
+        # PR中新代码的配置
+        target: 90%  # 新代码覆盖率目标
+        threshold: 0%  # 允许的下降范围
+
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+  require_changes: false  # 即使没有覆盖率变化也发表评论
+
+github_checks:
+  annotations: true  # 启用GitHub检查注释
