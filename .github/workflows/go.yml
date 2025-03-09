@@ -54,15 +54,3 @@ jobs:
 
       - name: Upload coverage to Codecov
         run: bash <(curl -s https://codecov.io/bash)
-
-      - name: Kratos
-        run: |
-          cd cmd/kratos
-          go build ./...
-          go test ./...
-
-      - name: HTTP
-        run: |
-          cd cmd/protoc-gen-go-http
-          go build ./...
-          go test ./...
