@@ -94,7 +94,6 @@ func (x *Router) Handle(ctx context.Context, reader io.Reader, writer io.Writer)
 				x.writePackCH <- protocol.NewJsonrpcResponse(incrID(), bs, nil)
 			}
 		}
-
 	})
 	eg.Go(func(ctx context.Context) error {
 		for {
@@ -106,7 +105,6 @@ func (x *Router) Handle(ctx context.Context, reader io.Reader, writer io.Writer)
 				x.writePackCH <- protocol.NewJsonrpcResponse(incrID(), bs, nil)
 			}
 		}
-
 	})
 	eg.Go(func(ctx context.Context) error {
 		for {
@@ -129,7 +127,6 @@ func (x *Router) Handle(ctx context.Context, reader io.Reader, writer io.Writer)
 				x.writePackCH <- protocol.NewJsonrpcResponse(incrID(), bs, nil)
 			}
 		}
-
 	})
 	return eg.Wait()
 }
@@ -193,7 +190,7 @@ func (x *Router) writeLoop(ctx context.Context, writer io.Writer) error {
 	}
 }
 
-func DefaultNotFoundHandleFunc(ctx context.Context, method string, message json.RawMessage) (json.RawMessage, error) {
+func DefaultNotFoundHandleFunc(_ context.Context, method string, message json.RawMessage) (json.RawMessage, error) {
 	log.Println("message====", string(message))
 	return nil, fmt.Errorf("method(%s) not found", method)
 }

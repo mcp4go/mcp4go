@@ -21,7 +21,7 @@ func main() {
 	homeDIR, _ := os.UserHomeDir()
 	logDIR := filepath.Join(homeDIR, ".mcp-layout", "logs")
 	os.MkdirAll(logDIR, os.ModePerm)
-	logFile, err := os.OpenFile(filepath.Join(logDIR, "weather.log"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	logFile, err := os.OpenFile(filepath.Join(logDIR, "weather.log"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o666)
 	if err != nil {
 		log.Fatalf("Failed to open log file: %v", err)
 	}

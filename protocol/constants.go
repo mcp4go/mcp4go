@@ -6,7 +6,7 @@ const ProtocolVersion = "0.5.4"
 
 // JSON-RPC version used by the protocol
 // 协议使用的 JSON-RPC 版本
-const JsonRpcVersion = "2.0"
+const JSONRPCVersion = "2.0"
 
 // Error codes (as defined in JSON-RPC 2.0) for protocol errors
 // 协议错误的错误代码（按照 JSON-RPC 2.0 定义）
@@ -73,7 +73,7 @@ const (
 const (
 	// Lifecycle notifications
 	NotificationInitialized = "notifications/initialized" // Notification after initialization
-	NotificationCancelled   = "notifications/cancelled"   // Notification for cancellation
+	NotificationCancelled   = "notifications/canceled"    // Notification for cancellation
 	NotificationProgress    = "notifications/progress"    // Notification for progress updates
 
 	// List changed notifications

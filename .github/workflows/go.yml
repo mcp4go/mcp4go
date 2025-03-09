@@ -1,0 +1,56 @@
+name: Go
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        go: [ 1.22.x, 1.23.x, 1.24.x ]
+    name: build & test
+    runs-on: ubuntu-latest
+    services:
+#      etcd:
+#        image: gcr.io/etcd-development/etcd:v3.5.0
+#        ports:
+#          - 2379:2379
+#        env:
+#          ETCD_LISTEN_CLIENT_URLS: http://0.0.0.0:2379
+#          ETCD_ADVERTISE_CLIENT_URLS: http://0.0.0.0:2379
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5.1.0
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Setup Environment
+        run: |
+          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Module cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go
+
+      - name: Build
+        run: go build ./...
+
+      - name: Test
+        run: make test-coverage
+
+      - name: Upload coverage to Codecov
+        run: bash <(curl -s https://codecov.io/bash)

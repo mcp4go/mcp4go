@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"github.com/google/wire"
+
 	"github.com/mcp4go/mcp4go/server/internal/router"
 )
 
@@ -29,6 +30,7 @@ func NewIHandlers(
 	listToolsHandler *ListToolsHandler,
 	callToolHandler *CallToolHandler,
 ) []router.IHandler {
+	//nolint:whitespace
 	return []router.IHandler{
 		initializeHandler,
 		initializedHandler,

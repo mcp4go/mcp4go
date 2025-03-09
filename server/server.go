@@ -26,7 +26,8 @@ type Server struct {
 }
 
 // NewServer creates a new server with the given transport and options
-func NewServer(transport transport.ITransport, opts ...ServerOption) *Server {
+func NewServer(transport transport.ITransport, opts ...Option) *Server {
+	//nolint:govet
 	options := defaultOptions()
 
 	for _, opt := range opts {

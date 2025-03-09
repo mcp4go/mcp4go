@@ -20,6 +20,7 @@ func NewInitializeHandler(
 	serverInfo protocol.Implementation,
 	instructions string,
 ) *InitializeHandler {
+	//nolint:whitespace
 	return &InitializeHandler{
 		serverCapabilities: serverCapabilities,
 		serverInfo:         serverInfo,
@@ -28,7 +29,7 @@ func NewInitializeHandler(
 }
 
 // Handle 处理initialize请求
-func (x *InitializeHandler) Handle(ctx context.Context, message json.RawMessage) (json.RawMessage, error) {
+func (x *InitializeHandler) Handle(_ context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.InitializeRequest
 	err := json.Unmarshal(message, &req)
 	if err != nil {

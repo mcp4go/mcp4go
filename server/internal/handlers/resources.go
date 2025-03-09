@@ -97,7 +97,7 @@ func NewListResourceTemplatesHandler(resource iface.IResource) *ListResourceTemp
 }
 
 // Handle 处理resources/templates/list请求
-func (x *ListResourceTemplatesHandler) Handle(ctx context.Context, message json.RawMessage) (json.RawMessage, error) {
+func (x *ListResourceTemplatesHandler) Handle(_ context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.ListResourceTemplatesRequest
 	err := json.Unmarshal(message, &req)
 	if err != nil {
@@ -130,6 +130,7 @@ func NewSubscribeHandler(
 	resource iface.IResource,
 	bus iface.EventBus,
 ) *SubscribeHandler {
+	//nolint:whitespace
 	return &SubscribeHandler{
 		resource: resource,
 		ch:       bus.ResourceUpdatedNotificationChan,

@@ -16,7 +16,7 @@ func NewInitializedHandler() *InitializedHandler {
 }
 
 // Handle 处理initialized通知
-func (x *InitializedHandler) Handle(ctx context.Context, message json.RawMessage) (json.RawMessage, error) {
+func (x *InitializedHandler) Handle(_ context.Context, _ json.RawMessage) (json.RawMessage, error) {
 	// initialized是一个通知，不需要返回结果
 	// 在这里可以进行一些初始化工作
 	return nil, nil
@@ -36,7 +36,7 @@ func NewShutdownHandler() *ShutdownHandler {
 }
 
 // Handle 处理shutdown请求
-func (x *ShutdownHandler) Handle(ctx context.Context, message json.RawMessage) (json.RawMessage, error) {
+func (x *ShutdownHandler) Handle(_ context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.ShutdownRequest
 	err := json.Unmarshal(message, &req)
 	if err != nil {
@@ -64,7 +64,7 @@ func NewCancelHandler() *CancelHandler {
 }
 
 // Handle 处理cancel请求
-func (x *CancelHandler) Handle(ctx context.Context, message json.RawMessage) (json.RawMessage, error) {
+func (x *CancelHandler) Handle(_ context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.CancelRequest
 	err := json.Unmarshal(message, &req)
 	if err != nil {
@@ -95,6 +95,7 @@ func NewProgressNotificationHandler(gateway interface {
 	SendNotification(method string, params interface{}) error
 },
 ) *ProgressNotificationHandler {
+	//nolint:whitespace
 	return &ProgressNotificationHandler{
 		gateway: gateway,
 	}

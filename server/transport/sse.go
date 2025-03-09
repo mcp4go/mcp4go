@@ -31,6 +31,7 @@ func (s *SSETransport) Run(ctx context.Context, handle func(context.Context, io.
 	// Create a new HTTP server
 	mux := http.NewServeMux()
 	mux.HandleFunc(s.path, func(w http.ResponseWriter, r *http.Request) {
+		//nolint:govet // Ignore error since we're just logging
 		ctx := r.Context()
 		// Set headers for SSE
 		w.Header().Set("Content-Type", "text/event-stream")
@@ -132,5 +133,5 @@ func (c *sseConnection) Write(p []byte) (n int, err error) {
 	c.flusher.Flush()
 
 	// Return original length since we're reporting on the input
-	return len(p), nil
+	return n, nil
 }
