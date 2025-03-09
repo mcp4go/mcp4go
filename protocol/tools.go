@@ -104,7 +104,7 @@ func NewImageContent(data string, mimeType string, annotations *Annotations) Con
 	}
 }
 
-func NewResourceContent(uri string, resource ResourceContent) Content {
+func NewResourceContent(resource ResourceContent) Content {
 	return Content{
 		Type:     "resource",
 		Resource: resource,

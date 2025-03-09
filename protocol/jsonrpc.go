@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 )
 
-// RequestId represents a uniquely identifying ID for a request in JSON-RPC
-// RequestId 表示 JSON-RPC 中请求的唯一标识 ID
-type RequestId interface{} // Can be string or integer (string 或整数类型)
+// RequestID represents a uniquely identifying ID for a request in JSON-RPC
+// RequestID 表示 JSON-RPC 中请求的唯一标识 ID
+type RequestID interface{} // Can be string or integer (string 或整数类型)
 
 // JsonrpcRequest represents a request that expects a response
 // JsonrpcRequest 表示一个期望响应的请求
@@ -48,12 +48,12 @@ type JsonrpcResponse struct {
 
 // NewJsonrpcResponse creates a new JSON-RPC response
 // NewJsonrpcResponse 创建一个新的 JSON-RPC 响应
-func NewJsonrpcResponse(id interface{}, result json.RawMessage, error *JsonrpcError) *JsonrpcResponse {
+func NewJsonrpcResponse(id interface{}, result json.RawMessage, errInfo *JsonrpcError) *JsonrpcResponse {
 	return &JsonrpcResponse{
 		Jsonrpc: "2.0",
 		ID:      id,
 		Result:  result,
-		Error:   error,
+		Error:   errInfo,
 	}
 }
 

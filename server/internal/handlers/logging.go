@@ -22,7 +22,7 @@ func NewSetLevelHandler() *SetLevelHandler {
 }
 
 // Handle 处理logging/setLevel请求
-func (x *SetLevelHandler) Handle(ctx context.Context, message json.RawMessage) (json.RawMessage, error) {
+func (x *SetLevelHandler) Handle(_ context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.SetLevelRequest
 	err := json.Unmarshal(message, &req)
 	if err != nil {
@@ -57,6 +57,7 @@ func NewLoggingMessageSender(
 	bus iface.EventBus,
 	levelHandler *SetLevelHandler,
 ) *LoggingMessageSender {
+	//nolint:whitespace
 	return &LoggingMessageSender{
 		logChan:      bus.LoggingMessageNotificationChan,
 		levelHandler: levelHandler,

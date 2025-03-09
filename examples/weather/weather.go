@@ -11,8 +11,7 @@ import (
 	"github.com/mcp4go/mcp4go/server/iface"
 )
 
-type WeatherResourceBuilder struct {
-}
+type WeatherResourceBuilder struct{}
 
 func NewWeatherResourceBuilder() *WeatherResourceBuilder {
 	return &WeatherResourceBuilder{}
@@ -129,8 +128,7 @@ func (w *WeatherResource) StartWatchListChanged(ctx context.Context, uri string,
 	return nil
 }
 
-type WeatherPromptBuilder struct {
-}
+type WeatherPromptBuilder struct{}
 
 func NewWeatherPromptBuilder() *WeatherPromptBuilder {
 	return &WeatherPromptBuilder{}
@@ -203,8 +201,7 @@ func (p *WeatherPrompt) StartWatchListChanged(ctx context.Context, uri string, c
 	return nil
 }
 
-type WeatherToolBuilder struct {
-}
+type WeatherToolBuilder struct{}
 
 func NewWeatherToolBuilder() *WeatherToolBuilder {
 	return &WeatherToolBuilder{}
