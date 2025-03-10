@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/mcp4go/mcp4go/protocol"
 	"github.com/mcp4go/mcp4go/server/iface"
@@ -147,7 +148,7 @@ func (x *dummyITool) List(_ context.Context, _ string) ([]protocol.Tool, string,
 	return nil, "", nil
 }
 
-func (x *dummyITool) Call(_ context.Context, _ string, _ map[string]interface{}) ([]protocol.Content, error) {
+func (x *dummyITool) Call(_ context.Context, _ string, _ json.RawMessage) ([]protocol.Content, error) {
 	return nil, nil
 }
 

@@ -1,6 +1,10 @@
 package protocol
 
-import "github.com/mcp4go/mcp4go/protocol/jsonschema"
+import (
+	"encoding/json"
+
+	"github.com/mcp4go/mcp4go/protocol/jsonschema"
+)
 
 // Tool defines a tool the client can call
 // Tool 定义了客户端可以调用的工具
@@ -13,7 +17,7 @@ type Tool struct {
 	Description string `json:"description,omitempty"`
 	// A JSON Schema object defining the expected parameters for the tool
 	// 定义工具参数的 JSON Schema 对象
-	InputSchema *jsonschema.Definition `json:"inputSchema"`
+	InputSchema *jsonschema.Definition `json:"inputSchema,omitempty"`
 }
 
 // ListToolsRequest is sent from client to request a list of tools the server has
@@ -46,7 +50,7 @@ type CallToolRequest struct {
 	Name string `json:"name"`
 	// Arguments for the tool
 	// 工具的参数
-	Arguments map[string]interface{} `json:"arguments,omitempty"`
+	Arguments json.RawMessage `json:"arguments,omitempty"`
 }
 
 // We'll replace all the content structs with the ones from sampling since they're the same
