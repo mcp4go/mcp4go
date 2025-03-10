@@ -2,6 +2,7 @@ package iface
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/mcp4go/mcp4go/protocol"
 )
@@ -52,7 +53,7 @@ type ITool interface {
 	List(ctx context.Context, cursor string) ([]protocol.Tool, string, error)
 
 	// Call 调用指定工具执行操作
-	Call(ctx context.Context, name string, arguments map[string]interface{}) ([]protocol.Content, error)
+	Call(ctx context.Context, name string, argsJSON json.RawMessage) ([]protocol.Content, error)
 
 	StartWatchListChanged(ctx context.Context, uri string, ch chan<- protocol.ToolListChangedNotification) error
 }

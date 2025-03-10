@@ -257,16 +257,21 @@ func (t *WeatherTool) List(ctx context.Context, cursor string) ([]protocol.Tool,
 	}, "", nil
 }
 
+type WeatherArgs struct {
+	City string `json:"city"`
+	Days int    `json:"days"`
+}
+
 // Call 调用特定名称和参数的天气工具
-func (t *WeatherTool) Call(ctx context.Context, name string, arguments map[string]interface{}) ([]protocol.Content, error) {
+func (t *WeatherTool) Call(ctx context.Context, name string, arguments json.RawMessage) ([]protocol.Content, error) {
+	var dst WeatherArgs
+	err := json.Unmarshal(arguments, &dst)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal arguments: %w", err)
+	}
 	switch name {
 	case "get_weather":
-		city, ok := arguments["city"].(string)
-		if !ok {
-			return []protocol.Content{
-				protocol.NewTextContent("Error: city argument must be a string", nil),
-			}, fmt.Errorf("city argument must be a string")
-		}
+		city := dst.City
 
 		// 在实际应用中，这里应该调用外部API获取真实天气数据
 		// 这里简单模拟返回一些天气数据
@@ -275,16 +280,11 @@ func (t *WeatherTool) Call(ctx context.Context, name string, arguments map[strin
 		}, nil
 
 	case "get_forecast":
-		city, ok := arguments["city"].(string)
-		if !ok {
-			return []protocol.Content{
-				protocol.NewTextContent("Error: city argument must be a string", nil),
-			}, fmt.Errorf("city argument must be a string")
-		}
+		city := dst.City
 
 		days := 3 // 默认值
-		if d, ok := arguments["days"].(float64); ok {
-			days = int(d)
+		if dst.Days > 0 {
+			days = dst.Days
 			if days > 5 {
 				days = 5 // 最多5天
 			}
