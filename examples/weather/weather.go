@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/mcp4go/mcp4go/protocol"
+	"github.com/mcp4go/mcp4go/protocol/jsonschema"
 	"github.com/mcp4go/mcp4go/server"
 	"github.com/mcp4go/mcp4go/server/iface"
 )
@@ -224,12 +225,12 @@ func (t *WeatherTool) List(ctx context.Context, cursor string) ([]protocol.Tool,
 		{
 			Name:        "get_weather",
 			Description: "Get the current weather for a specific city",
-			InputSchema: &protocol.InputSchema{
+			InputSchema: &jsonschema.Definition{
 				Type: "object",
-				Properties: map[string]interface{}{
-					"city": map[string]interface{}{
-						"type":        "string",
-						"description": "The name of the city",
+				Properties: map[string]jsonschema.Definition{
+					"city": {
+						Type:        "string",
+						Description: "The name of the city",
 					},
 				},
 				Required: []string{"city"},
@@ -238,17 +239,16 @@ func (t *WeatherTool) List(ctx context.Context, cursor string) ([]protocol.Tool,
 		{
 			Name:        "get_forecast",
 			Description: "Get a 5-day weather forecast for a specific city",
-			InputSchema: &protocol.InputSchema{
+			InputSchema: &jsonschema.Definition{
 				Type: "object",
-				Properties: map[string]interface{}{
-					"city": map[string]interface{}{
-						"type":        "string",
-						"description": "The name of the city",
+				Properties: map[string]jsonschema.Definition{
+					"city": {
+						Type:        jsonschema.String,
+						Description: "The name of the city",
 					},
-					"days": map[string]interface{}{
-						"type":        "integer",
-						"description": "Number of days for the forecast (max 5)",
-						"default":     3,
+					"days": {
+						Type:        jsonschema.Integer,
+						Description: "Number of days for the forecast (max 5)",
 					},
 				},
 				Required: []string{"city"},
