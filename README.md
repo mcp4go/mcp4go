@@ -9,7 +9,7 @@
 
 # MCP4Go
 
-MCP4Go is a Go implementation of the Model Context Protocol (MCP), designed to simplify the development of AI applications by abstracting away protocol complexities.
+MCP4Go is a Go implementation of the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction), designed to simplify the development of AI applications by abstracting away protocol complexities.
 
 ## Features
 
