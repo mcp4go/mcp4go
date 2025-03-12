@@ -41,6 +41,13 @@ LINTER := bin/golangci-lint
 $(LINTER):
 	curl -SL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s latest
 
+.PHONY: init-dev
+init-dev:
+	go install github.com/git-chglog/git-chglog/cmd/git-chglog@latest
+	go install mvdan.cc/gofumpt@latest
+	go install golang.org/x/tools/cmd/goimports@latest
+
+
 .PHONY: inspector
 inspector:
 	npx -y @modelcontextprotocol/inspector
@@ -77,3 +84,27 @@ lint: $(LINTER)
 	echo $(os)
 	@${TOOLS_SHELL} lint
 	@echo "lint check finished"
+
+.PHONY: changelog
+# 生成 changelog
+changelog:
+	git-chglog -o ./CHANGELOG.md
+
+# show help
+help:
+	@echo ''
+	@echo 'Usage:'
+	@echo ' make [target]'
+	@echo ''
+	@echo 'Targets:'
+	@awk '/^[a-zA-Z\-_0-9]+:/ { \
+	helpMessage = match(lastLine, /^# (.*)/); \
+		if (helpMessage) { \
+			helpCommand = substr($$1, 0, index($$1, ":")-1); \
+			helpMessage = substr(lastLine, RSTART + 2, RLENGTH); \
+			printf "\033[36m%-22s\033[0m %s\n", helpCommand,helpMessage; \
+		} \
+	} \
+	{ lastLine = $$0 }' $(MAKEFILE_LIST)
+
+.DEFAULT_GOAL := help
