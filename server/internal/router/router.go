@@ -148,7 +148,7 @@ func (x *Router) readLoop(ctx context.Context, reader io.Reader) error {
 			if err != nil {
 				return err
 			}
-			log.Println("req====", req)
+			log.Printf("#%s. method[%s] params[%s]\n", req.GetID(), req.Method, string(req.Params))
 			// handle request
 			handler, ok := x.handlers[protocol.McpMethod(req.Method)]
 			var respBs json.RawMessage
@@ -193,6 +193,6 @@ func (x *Router) writeLoop(ctx context.Context, writer io.Writer) error {
 }
 
 func DefaultNotFoundHandleFunc(_ context.Context, method string, message json.RawMessage) (json.RawMessage, error) {
-	log.Println("message====", string(message))
+	log.Printf("method(%s) not found, message=%s", method, message)
 	return nil, fmt.Errorf("method(%s) not found", method)
 }
