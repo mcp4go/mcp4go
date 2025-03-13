@@ -1,5 +1,7 @@
 package protocol
 
+import "encoding/json"
+
 // LoggingLevel defines the severity of a log message (RFC-5424 syslog message severities)
 // LoggingLevel 定义了日志消息的严重性（符合 RFC-5424 系统日志消息严重性标准）
 type LoggingLevel string
@@ -46,7 +48,7 @@ type SetLevelRequest struct {
 type SetLevelResult struct {
 	// Reserved by MCP for additional metadata
 	// 保留给MCP用于附加元数据
-	Meta map[string]interface{} `json:"_meta,omitempty"`
+	Meta json.RawMessage `json:"_meta,omitempty"`
 }
 
 // LoggingMessageNotification is sent from server to client to report log messages
@@ -60,5 +62,5 @@ type LoggingMessageNotification struct {
 	Logger string `json:"logger,omitempty"`
 	// The data to be logged, such as a string message or an object
 	// 要记录的数据，如字符串消息或对象
-	Data interface{} `json:"data"`
+	Data json.RawMessage `json:"data"`
 }

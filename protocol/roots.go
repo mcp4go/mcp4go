@@ -1,5 +1,7 @@
 package protocol
 
+import "encoding/json"
+
 // Root represents a root directory or file that the server can operate on
 // Root 表示服务器可以操作的根目录或文件
 type Root struct {
@@ -16,7 +18,7 @@ type Root struct {
 type ListRootsRequest struct {
 	// Reserved by MCP for additional metadata including progress tracking
 	// 保留给MCP用于附加元数据，包括进度跟踪
-	Meta map[string]interface{} `json:"_meta,omitempty"`
+	Meta json.RawMessage `json:"_meta,omitempty"`
 }
 
 // ListRootsResult is the client's response containing a list of roots
@@ -27,7 +29,7 @@ type ListRootsResult struct {
 	Roots []Root `json:"roots"`
 	// Reserved by MCP for additional metadata
 	// 保留给MCP用于附加元数据
-	Meta map[string]interface{} `json:"_meta,omitempty"`
+	Meta json.RawMessage `json:"_meta,omitempty"`
 }
 
 // RPC methods to add or remove roots are not part of the official MCP spec
@@ -38,5 +40,5 @@ type ListRootsResult struct {
 type RootsListChangedNotification struct {
 	// Reserved by MCP for additional metadata
 	// 保留给MCP用于附加元数据
-	Meta map[string]interface{} `json:"_meta,omitempty"`
+	Meta json.RawMessage `json:"_meta,omitempty"`
 }

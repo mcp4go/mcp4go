@@ -1,5 +1,7 @@
 package protocol
 
+import "encoding/json"
+
 // PromptArgument describes an argument that a prompt can accept
 // PromptArgument 描述了提示可以接受的参数
 type PromptArgument struct {
@@ -47,7 +49,7 @@ type ListPromptsResult struct {
 	NextCursor string `json:"nextCursor,omitempty"`
 	// Reserved by MCP for additional metadata
 	// 保留给MCP用于附加元数据
-	Meta map[string]interface{} `json:"_meta,omitempty"`
+	Meta json.RawMessage `json:"_meta,omitempty"`
 }
 
 // GetPromptRequest is sent from client to get a prompt from the server
@@ -85,7 +87,7 @@ type GetPromptResult struct {
 	Messages []PromptMessage `json:"messages"`
 	// Reserved by MCP for additional metadata
 	// 保留给MCP用于附加元数据
-	Meta map[string]interface{} `json:"_meta,omitempty"`
+	Meta json.RawMessage `json:"_meta,omitempty"`
 }
 
 // PromptListChangedNotification is sent when the prompt list has changed
@@ -93,5 +95,5 @@ type GetPromptResult struct {
 type PromptListChangedNotification struct {
 	// Reserved by MCP for additional metadata
 	// 保留给MCP用于附加元数据
-	Meta map[string]interface{} `json:"_meta,omitempty"`
+	Meta json.RawMessage `json:"_meta,omitempty"`
 }

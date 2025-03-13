@@ -39,7 +39,7 @@ type ListToolsResult struct {
 	NextCursor string `json:"nextCursor,omitempty"`
 	// Reserved by MCP for additional metadata
 	// 保留给MCP用于附加元数据
-	Meta map[string]interface{} `json:"_meta,omitempty"`
+	Meta json.RawMessage `json:"_meta,omitempty"`
 }
 
 // CallToolRequest is sent from client to invoke a tool provided by the server
@@ -114,7 +114,7 @@ type CallToolResult struct {
 	Content []Content `json:"content"`
 	// Reserved by MCP for additional metadata
 	// 保留给MCP用于附加元数据
-	Meta map[string]interface{} `json:"_meta,omitempty"`
+	Meta json.RawMessage `json:"_meta,omitempty"`
 }
 
 // ToolListChangedNotification is sent from server to client when the tool list changes
@@ -122,5 +122,5 @@ type CallToolResult struct {
 type ToolListChangedNotification struct {
 	// Reserved by MCP for additional metadata
 	// 保留给MCP用于附加元数据
-	Meta map[string]interface{} `json:"_meta,omitempty"`
+	Meta json.RawMessage `json:"_meta,omitempty"`
 }

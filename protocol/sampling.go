@@ -1,5 +1,7 @@
 package protocol
 
+import "encoding/json"
+
 // ModelHint provides hints to use for model selection
 // ModelHint 提供了用于模型选择的提示
 type ModelHint struct {
@@ -69,7 +71,7 @@ type CreateMessageRequest struct {
 	StopSequences []string `json:"stopSequences,omitempty"`
 	// Optional metadata to pass through to the LLM provider
 	// 要传递给语言模型提供商的可选元数据
-	Metadata map[string]interface{} `json:"metadata,omitempty"`
+	Metadata json.RawMessage `json:"metadata,omitempty"`
 }
 
 // StopReason indicates why sampling stopped
@@ -114,7 +116,7 @@ type SamplingMessage struct {
 	Role Role `json:"role"`
 	// The content of the message (text or image)
 	// 消息的内容（文本或图像）
-	Content interface{} `json:"content"`
+	Content Content `json:"content"`
 }
 
 // Annotations provides optional metadata for content items
@@ -145,5 +147,5 @@ type CreateMessageResult struct {
 	StopReason string `json:"stopReason,omitempty"`
 	// Reserved by MCP for additional metadata
 	// 保留给MCP用于附加元数据
-	Meta map[string]interface{} `json:"_meta,omitempty"`
+	Meta json.RawMessage `json:"_meta,omitempty"`
 }

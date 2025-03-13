@@ -64,6 +64,9 @@ func (x *CallToolHandler) Handle(ctx context.Context, message json.RawMessage) (
 	}
 
 	content, err := x.tool.Call(ctx, req.Name, req.Arguments)
+	if err != nil {
+		return nil, fmt.Errorf("call tool failed: %w", err)
+	}
 	result := protocol.CallToolResult{
 		IsError: err != nil,
 		Content: content,
