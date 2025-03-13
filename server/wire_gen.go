@@ -7,6 +7,7 @@
 package server
 
 import (
+	"github.com/mcp4go/mcp4go/pkg/logger"
 	"github.com/mcp4go/mcp4go/server/iface"
 	"github.com/mcp4go/mcp4go/server/internal/handlers"
 	"github.com/mcp4go/mcp4go/server/internal/router"
@@ -14,7 +15,7 @@ import (
 
 // Injectors from wire.go:
 
-func initRouter(initializeHandler *handlers.InitializeHandler, setLevelHandler *handlers.SetLevelHandler, iResource iface.IResource, iPrompt iface.IPrompt, iTool iface.ITool, eventBus iface.EventBus) (router.IRouter, error) {
+func initRouter(iLogger logger.ILogger, initializeHandler *handlers.InitializeHandler, setLevelHandler *handlers.SetLevelHandler, iResource iface.IResource, iPrompt iface.IPrompt, iTool iface.ITool, eventBus iface.EventBus) (router.IRouter, error) {
 	initializedHandler := handlers.NewInitializedHandler()
 	shutdownHandler := handlers.NewShutdownHandler()
 	cancelHandler := handlers.NewCancelHandler()
@@ -28,7 +29,10 @@ func initRouter(initializeHandler *handlers.InitializeHandler, setLevelHandler *
 	listToolsHandler := handlers.NewListToolsHandler(iTool)
 	callToolHandler := handlers.NewCallToolHandler(iTool)
 	v := handlers.NewIHandlers(initializeHandler, initializedHandler, shutdownHandler, cancelHandler, setLevelHandler, listPromptsHandler, getPromptHandler, listResourcesHandler, readResourceHandler, listResourceTemplatesHandler, subscribeHandler, unsubscribeHandler, listToolsHandler, callToolHandler)
-	routerRouter := router.NewRouter(v, eventBus)
+	routerRouter, err := router.NewRouter(v, eventBus, iLogger)
+	if err != nil {
+		return nil, err
+	}
 	iRouter := router.NewIRouter(routerRouter)
 	return iRouter, nil
 }

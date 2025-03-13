@@ -45,7 +45,7 @@ func main() {
 	stdioTransport := transport.NewStdioTransport()
 
 	// 创建 MCP 服务器，并配置选项
-	srv := server.NewServer(
+	srv, err := server.NewServer(
 		stdioTransport,
 		server.WithServerInfo(protocol.Implementation{
 			Name:    "weather-mcp",
@@ -56,6 +56,9 @@ func main() {
 		server.WithPromptBuilder(weatherPrompt),
 		server.WithToolBuilder(weatherTool),
 	)
+	if err != nil {
+		log.Fatalf("Failed to create server: %v", err)
+	}
 
 	// 启动服务器
 	log.Println("Starting Weather MCP server")

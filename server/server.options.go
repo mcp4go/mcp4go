@@ -4,22 +4,28 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/mcp4go/mcp4go/pkg/logger"
 	"github.com/mcp4go/mcp4go/protocol"
 	"github.com/mcp4go/mcp4go/server/iface"
 )
 
 // defaultOptions returns a new options struct with default values
-func defaultOptions() options {
+func defaultOptions() (options, error) {
+	_log, err := logger.NewDefaultLogger("server", logger.LevelDebug)
+	if err != nil {
+		return options{}, err
+	}
 	return options{
 		serverInfo: protocol.Implementation{
 			Name:    "mcp4go",
 			Version: "0.1.0",
 		},
 		instructions:    "Welcome to mcp4go!",
+		logger:          _log,
 		resourceBuilder: &dummyIResourceBuilder{},
 		promptBuilder:   &dummyIPromptBuilder{},
 		toolBuilder:     &dummyIToolBuilder{},
-	}
+	}, nil
 }
 
 // Option is a function that configures the server options
