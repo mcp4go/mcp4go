@@ -63,8 +63,10 @@ func NewRouter(list []IHandler, bus iface.EventBus) *Router {
 
 func (x *Router) Handle(ctx context.Context, reader io.Reader, writer io.Writer) error {
 	id := uint32(0)
-	incrID := func() uint32 {
-		return atomic.AddUint32(&id, 1)
+	incrID := func() json.RawMessage {
+		newID := atomic.AddUint32(&id, 1)
+		bs, _ := json.Marshal(newID)
+		return bs
 	}
 	eg := errgroup.WithCancel(ctx)
 	eg.Go(func(ctx context.Context) error {
@@ -162,7 +164,7 @@ func (x *Router) readLoop(ctx context.Context, reader io.Reader) error {
 				x.writePackCH <- protocol.NewJsonrpcResponse(req.GetID(), nil, &protocol.JsonrpcError{
 					Code:    -1,
 					Message: err.Error(),
-					Data:    "",
+					Data:    nil,
 				})
 				return nil
 			}

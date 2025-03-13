@@ -1,6 +1,9 @@
 package protocol
 
-import "encoding/base64"
+import (
+	"encoding/base64"
+	"encoding/json"
+)
 
 // Resource represents a known resource that the server is capable of reading
 // Resource 表示服务器能够读取的已知资源
@@ -64,7 +67,7 @@ type ListResourcesResult struct {
 	NextCursor string `json:"nextCursor,omitempty"`
 	// Reserved by MCP for additional metadata
 	// 保留给MCP用于附加元数据
-	Meta map[string]interface{} `json:"_meta,omitempty"`
+	Meta json.RawMessage `json:"_meta,omitempty"`
 }
 
 // ReadResourceRequest is sent from client to server to read a specific resource URI
@@ -117,7 +120,7 @@ type ReadResourceResult struct {
 	Contents []ResourceContent `json:"contents"`
 	// Reserved by MCP for additional metadata
 	// 保留给MCP用于附加元数据
-	Meta map[string]interface{} `json:"_meta,omitempty"`
+	Meta json.RawMessage `json:"_meta,omitempty"`
 }
 
 // SubscribeRequest is sent to request notifications when a resource is updated
@@ -133,7 +136,7 @@ type SubscribeRequest struct {
 type SubscribeResult struct {
 	// Reserved by MCP for additional metadata
 	// 保留给MCP用于附加元数据
-	Meta map[string]interface{} `json:"_meta,omitempty"`
+	Meta json.RawMessage `json:"_meta,omitempty"`
 }
 
 // UnsubscribeRequest is sent to cancel subscription notifications
@@ -149,7 +152,7 @@ type UnsubscribeRequest struct {
 type UnsubscribeResult struct {
 	// Reserved by MCP for additional metadata
 	// 保留给MCP用于附加元数据
-	Meta map[string]interface{} `json:"_meta,omitempty"`
+	Meta json.RawMessage `json:"_meta,omitempty"`
 }
 
 // ResourceUpdatedNotification is sent to notify about a resource update
@@ -165,7 +168,7 @@ type ResourceUpdatedNotification struct {
 type ResourceListChangedNotification struct {
 	// Reserved by MCP for additional metadata
 	// 保留给MCP用于附加元数据
-	Meta map[string]interface{} `json:"_meta,omitempty"`
+	Meta json.RawMessage `json:"_meta,omitempty"`
 }
 
 // ListResourceTemplatesRequest is sent to request a list of resource templates
@@ -187,5 +190,5 @@ type ListResourceTemplatesResult struct {
 	NextCursor string `json:"nextCursor,omitempty"`
 	// Reserved by MCP for additional metadata
 	// 保留给MCP用于附加元数据
-	Meta map[string]interface{} `json:"_meta,omitempty"`
+	Meta json.RawMessage `json:"_meta,omitempty"`
 }

@@ -1,5 +1,7 @@
 package protocol
 
+import "encoding/json"
+
 // InitializeRequest is sent from the client to the server when it first connects
 // InitializeRequest 是客户端在首次连接时发送给服务器的
 type InitializeRequest struct {
@@ -78,7 +80,7 @@ type ClientCapabilities struct {
 	Sampling *ClientSampling `json:"sampling,omitempty"`
 	// Experimental capabilities that the client supports
 	// 客户端支持的实验性功能
-	Experimental map[string]interface{} `json:"experimental,omitempty"`
+	Experimental json.RawMessage `json:"experimental,omitempty"`
 }
 
 // ServerLogging defines logging capabilities of a server
@@ -120,7 +122,7 @@ type ServerTools struct {
 type InitializedNotification struct {
 	// Reserved by MCP for additional metadata
 	// 保留给MCP用于附加元数据
-	Meta map[string]interface{} `json:"_meta,omitempty"`
+	Meta json.RawMessage `json:"_meta,omitempty"`
 }
 
 // ServerCapabilities defines capabilities that a server may support
@@ -149,5 +151,5 @@ type ServerCapabilities struct {
 	Tools *ServerTools `json:"tools,omitempty"`
 	// Experimental capabilities that the server supports
 	// 服务器支持的实验性功能
-	Experimental map[string]interface{} `json:"experimental,omitempty"`
+	Experimental json.RawMessage `json:"experimental,omitempty"`
 }

@@ -86,10 +86,11 @@ func (x *LoggingMessageSender) SendLogMessage(level protocol.LoggingLevel, logge
 		return nil
 	}
 
+	bs, _ := json.Marshal(data)
 	x.logChan <- protocol.LoggingMessageNotification{
 		Level:  level,
 		Logger: logger,
-		Data:   data,
+		Data:   bs,
 	}
 
 	return nil
