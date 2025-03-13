@@ -19,7 +19,7 @@ func main() {
 	defer cancel()
 
 	homeDIR, _ := os.UserHomeDir()
-	logDIR := filepath.Join(homeDIR, ".mcp-layout", "logs")
+	logDIR := filepath.Join(homeDIR, ".mcp4go", "logs")
 	os.MkdirAll(logDIR, os.ModePerm)
 	logFile, err := os.OpenFile(filepath.Join(logDIR, "weather.log"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o666)
 	if err != nil {

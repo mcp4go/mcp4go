@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"runtime/debug"
 	"sync/atomic"
 
 	"github.com/mcp4go/mcp4go/protocol"
@@ -143,26 +144,33 @@ func (x *Router) readLoop(ctx context.Context, reader io.Reader) error {
 		default:
 		}
 		err := func() error {
+			defer func() {
+				if r := recover(); r != nil {
+					log.Printf("panic: %v, stack:\n%s\n", r, debug.Stack())
+				}
+			}()
 			var req protocol.JsonrpcRequest
 			err := decoder.Decode(&req)
 			if err != nil {
 				return err
 			}
-			log.Println("req====", req)
-			// handle request
-			handler, ok := x.handlers[protocol.McpMethod(req.Method)]
-			var respBs json.RawMessage
-			if !ok {
-				respBs, err = x.options.handleNotFound(ctx, req.Method, req.Params)
-			} else {
-				respBs, err = handler.Handle(ctx, req.Params)
+
+			log.Printf("#%s. method[%s] params[%s]\n", req.GetID(), req.Method, string(req.Params))
+
+			respBs, err := x.handle(ctx, &req)
+			if err != nil {
+				log.Printf("handle error: %v\n", err)
 			}
 			if req.IsNotification() {
 				return nil
 			}
 			if err != nil {
+				code := int64(-1)
+				if errCode, ok := err.(interface{ Code() int64 }); ok {
+					code = errCode.Code()
+				}
 				x.writePackCH <- protocol.NewJsonrpcResponse(req.GetID(), nil, &protocol.JsonrpcError{
-					Code:    -1,
+					Code:    code,
 					Message: err.Error(),
 					Data:    nil,
 				})
@@ -192,7 +200,16 @@ func (x *Router) writeLoop(ctx context.Context, writer io.Writer) error {
 	}
 }
 
+func (x *Router) handle(ctx context.Context, req *protocol.JsonrpcRequest) (json.RawMessage, error) {
+	// handle request
+	handler, ok := x.handlers[protocol.McpMethod(req.Method)]
+	if !ok {
+		return x.options.handleNotFound(ctx, req.Method, req.Params)
+	}
+	return handler.Handle(ctx, req.Params)
+}
+
 func DefaultNotFoundHandleFunc(_ context.Context, method string, message json.RawMessage) (json.RawMessage, error) {
-	log.Println("message====", string(message))
+	log.Printf("method(%s) not found, message=%s", method, message)
 	return nil, fmt.Errorf("method(%s) not found", method)
 }
