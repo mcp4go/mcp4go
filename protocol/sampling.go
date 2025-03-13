@@ -114,7 +114,7 @@ type SamplingMessage struct {
 	Role Role `json:"role"`
 	// The content of the message (text or image)
 	// 消息的内容（文本或图像）
-	Content interface{} `json:"content"`
+	Content Content `json:"content"`
 }
 
 // Annotations provides optional metadata for content items
