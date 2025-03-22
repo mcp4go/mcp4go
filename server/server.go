@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/mcp4go/mcp4go/pkg/logger"
 	"github.com/mcp4go/mcp4go/protocol"
 	"github.com/mcp4go/mcp4go/server/iface"
 	"github.com/mcp4go/mcp4go/server/internal/handlers"
@@ -15,6 +16,8 @@ type options struct {
 	serverInfo   protocol.Implementation
 	instructions string
 
+	logger logger.ILogger
+
 	resourceBuilder iface.IResourceBuilder
 	promptBuilder   iface.IPromptBuilder
 	toolBuilder     iface.IToolBuilder
@@ -22,27 +25,32 @@ type options struct {
 
 type Server struct {
 	options   options
+	log       *logger.LogHelper
 	transport transport.ITransport
 }
 
 // NewServer creates a new server with the given transport and options
-func NewServer(transport transport.ITransport, opts ...Option) *Server {
+func NewServer(transport transport.ITransport, opts ...Option) (*Server, error) {
 	//nolint:govet
-	options := defaultOptions()
-
+	options, err := defaultOptions()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create default options: %w", err)
+	}
 	for _, opt := range opts {
 		opt.apply(&options)
 	}
 
 	return &Server{
 		options:   options,
+		log:       logger.NewLogHelper(options.logger),
 		transport: transport,
-	}
+	}, nil
 }
 
 func (x *Server) Run(ctx context.Context) error {
 	return x.transport.Run(ctx, func(ctx context.Context, reader io.Reader, writer io.Writer) error {
 		router, err := initRouter(
+			x.options.logger,
 			handlers.NewInitializeHandler(
 				protocol.ServerCapabilities{
 					Prompts: &protocol.ServerPrompts{
@@ -70,4 +78,8 @@ func (x *Server) Run(ctx context.Context) error {
 		}
 		return router.Handle(ctx, reader, writer)
 	})
+}
+
+func (x *Server) Logger() *logger.LogHelper {
+	return x.log
 }

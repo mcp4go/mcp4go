@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"runtime/debug"
 	"sync/atomic"
 
+	"github.com/mcp4go/mcp4go/pkg/logger"
 	"github.com/mcp4go/mcp4go/protocol"
 	"github.com/mcp4go/mcp4go/server/iface"
 
@@ -20,16 +20,6 @@ type IRouter interface {
 	Handle(ctx context.Context, reader io.Reader, writer io.Writer) error
 }
 
-type Options struct {
-	handleNotFound NotFoundHandleFunc
-}
-
-func defaultOptions() Options {
-	return Options{
-		handleNotFound: DefaultNotFoundHandleFunc,
-	}
-}
-
 type NotFoundHandleFunc func(ctx context.Context, method string, message json.RawMessage) (json.RawMessage, error)
 
 type IHandler interface {
@@ -38,7 +28,7 @@ type IHandler interface {
 }
 
 type Router struct {
-	options Options
+	log *logger.LogHelper
 
 	writePackCH chan *protocol.JsonrpcResponse
 
@@ -50,16 +40,15 @@ func NewIRouter(x *Router) IRouter {
 	return x
 }
 
-func NewRouter(list []IHandler, bus iface.EventBus) *Router {
-	options := defaultOptions()
+func NewRouter(list []IHandler, bus iface.EventBus, _logger logger.ILogger) (*Router, error) {
 	return &Router{
-		options:     options,
+		log:         logger.NewLogHelper(_logger),
 		writePackCH: make(chan *protocol.JsonrpcResponse, 2048),
 		handlers: arrayx.BuildMap(list, func(t IHandler) protocol.McpMethod {
 			return t.Method()
 		}),
 		bus: bus,
-	}
+	}, nil
 }
 
 func (x *Router) Handle(ctx context.Context, reader io.Reader, writer io.Writer) error {
@@ -146,7 +135,7 @@ func (x *Router) readLoop(ctx context.Context, reader io.Reader) error {
 		err := func() error {
 			defer func() {
 				if r := recover(); r != nil {
-					log.Printf("panic: %v, stack:\n%s\n", r, debug.Stack())
+					x.log.Errorf(ctx, "[Router][handle] panic: %v, stack:\n%s\n", r, debug.Stack())
 				}
 			}()
 			var req protocol.JsonrpcRequest
@@ -155,11 +144,11 @@ func (x *Router) readLoop(ctx context.Context, reader io.Reader) error {
 				return err
 			}
 
-			log.Printf("#%s. method[%s] params[%s]\n", req.GetID(), req.Method, string(req.Params))
+			x.log.Debugf(ctx, "#%s. method[%s] params[%s]\n", req.GetID(), req.Method, string(req.Params))
 
 			respBs, err := x.handle(ctx, &req)
 			if err != nil {
-				log.Printf("handle error: %v\n", err)
+				x.log.Errorf(ctx, "handle error: %v\n", err)
 			}
 			if req.IsNotification() {
 				return nil
@@ -204,12 +193,12 @@ func (x *Router) handle(ctx context.Context, req *protocol.JsonrpcRequest) (json
 	// handle request
 	handler, ok := x.handlers[protocol.McpMethod(req.Method)]
 	if !ok {
-		return x.options.handleNotFound(ctx, req.Method, req.Params)
+		return x.notFoundHandleFunc(ctx, req.Method, req.Params)
 	}
 	return handler.Handle(ctx, req.Params)
 }
 
-func DefaultNotFoundHandleFunc(_ context.Context, method string, message json.RawMessage) (json.RawMessage, error) {
-	log.Printf("method(%s) not found, message=%s", method, message)
+func (x *Router) notFoundHandleFunc(ctx context.Context, method string, message json.RawMessage) (json.RawMessage, error) {
+	x.log.Errorf(ctx, "method(%s) not found, message=%s", method, message)
 	return nil, fmt.Errorf("method(%s) not found", method)
 }

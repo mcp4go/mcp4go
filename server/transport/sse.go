@@ -37,7 +37,6 @@ func (s *SSETransport) Run(ctx context.Context, handle func(context.Context, io.
 		w.Header().Set("Content-Type", "text/event-stream")
 		w.Header().Set("Cache-Control", "no-cache")
 		w.Header().Set("Connection", "keep-alive")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
 
 		// Create flush-supporting writer
 		flusher, ok := w.(http.Flusher)
