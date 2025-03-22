@@ -10,22 +10,24 @@ import (
 )
 
 // defaultOptions returns a new options struct with default values
-func defaultOptions() (options, error) {
-	_log, err := logger.NewDefaultLogger("server", logger.LevelDebug)
+func defaultOptions() (options, func(), error) {
+	_log, closeLog, err := logger.NewDefaultLogger("server", logger.LevelDebug)
 	if err != nil {
-		return options{}, err
+		return options{}, nil, err
 	}
 	return options{
-		serverInfo: protocol.Implementation{
-			Name:    "mcp4go",
-			Version: "0.1.0",
-		},
-		instructions:    "Welcome to mcp4go!",
-		logger:          _log,
-		resourceBuilder: &dummyIResourceBuilder{},
-		promptBuilder:   &dummyIPromptBuilder{},
-		toolBuilder:     &dummyIToolBuilder{},
-	}, nil
+			serverInfo: protocol.Implementation{
+				Name:    "mcp4go",
+				Version: "0.1.0",
+			},
+			instructions:    "Welcome to mcp4go!",
+			logger:          _log,
+			resourceBuilder: &dummyIResourceBuilder{},
+			promptBuilder:   &dummyIPromptBuilder{},
+			toolBuilder:     &dummyIToolBuilder{},
+		}, func() {
+			closeLog()
+		}, nil
 }
 
 // Option is a function that configures the server options

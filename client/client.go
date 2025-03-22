@@ -145,26 +145,28 @@ func WithLoggingMessageHandler(handler func(context.Context, protocol.LoggingMes
 }
 
 // defaultOptions returns the default client options
-func defaultOptions() (options, error) {
-	_log, err := logger.NewDefaultLogger("client", logger.LevelDebug)
+func defaultOptions() (options, func(), error) {
+	_log, closeLog, err := logger.NewDefaultLogger("client", logger.LevelDebug)
 	if err != nil {
-		return options{}, err
+		return options{}, nil, err
 	}
 	return options{
-		clientInfo: protocol.Implementation{
-			Name:    "mcp4go-client",
-			Version: "0.1.0",
-		},
-		capabilities: protocol.ClientCapabilities{},
-		logger:       _log,
-	}, nil
+			clientInfo: protocol.Implementation{
+				Name:    "mcp4go-client",
+				Version: "0.1.0",
+			},
+			capabilities: protocol.ClientCapabilities{},
+			logger:       _log,
+		}, func() {
+			closeLog()
+		}, nil
 }
 
 // NewClient creates a new MCP client with the given transport and options
-func NewClient(t transport.ITransport, opts ...Option) (*Client, error) {
-	options, err := defaultOptions()
+func NewClient(t transport.ITransport, opts ...Option) (*Client, func(), error) {
+	options, cleanup, err := defaultOptions()
 	if err != nil {
-		return nil, fmt.Errorf("failed to create default options: %w", err)
+		return nil, nil, fmt.Errorf("failed to create default options: %w", err)
 	}
 
 	for _, opt := range opts {
@@ -172,21 +174,23 @@ func NewClient(t transport.ITransport, opts ...Option) (*Client, error) {
 	}
 
 	return &Client{
-		options:              options,
-		log:                  logger.NewLogHelper(options.logger),
-		transport:            t,
-		requestID:            1,
-		cancel:               nil,
-		eg:                   nil,
-		initialized:          false,
-		mu:                   sync.Mutex{},
-		notificationHandlers: make(map[string]NotificationHandler),
-		responseHandlers:     make(map[int]chan *protocol.JsonrpcResponse),
-		writeChan:            make(chan json.RawMessage, 1024),
-		serverCapabilities:   protocol.ServerCapabilities{},
-		serverInfo:           protocol.Implementation{},
-		instructions:         "",
-	}, nil
+			options:              options,
+			log:                  logger.NewLogHelper(options.logger),
+			transport:            t,
+			requestID:            1,
+			cancel:               nil,
+			eg:                   nil,
+			initialized:          false,
+			mu:                   sync.Mutex{},
+			notificationHandlers: make(map[string]NotificationHandler),
+			responseHandlers:     make(map[int]chan *protocol.JsonrpcResponse),
+			writeChan:            make(chan json.RawMessage, 1024),
+			serverCapabilities:   protocol.ServerCapabilities{},
+			serverInfo:           protocol.Implementation{},
+			instructions:         "",
+		}, func() {
+			cleanup()
+		}, nil
 }
 
 // Connect establishes a connection to the server and initializes it
