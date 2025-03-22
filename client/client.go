@@ -68,6 +68,13 @@ type options struct {
 	loggingMessageHandler       func(context.Context, protocol.LoggingMessageNotification) error
 }
 
+// WithLogger sets the logger for the client
+func WithLogger(log logger.ILogger) Option {
+	return func(o *options) {
+		o.logger = log
+	}
+}
+
 // WithClientInfo sets client name and version
 func WithClientInfo(name, version string) Option {
 	return func(o *options) {

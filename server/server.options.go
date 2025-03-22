@@ -39,6 +39,13 @@ func (fn OptionFunc) apply(o *options) {
 	fn(o)
 }
 
+// WithLogger sets the logger interface
+func WithLogger(logger logger.ILogger) OptionFunc {
+	return func(o *options) {
+		o.logger = logger
+	}
+}
+
 // WithServerInfo sets the server implementation info
 func WithServerInfo(info protocol.Implementation) OptionFunc {
 	return func(o *options) {
