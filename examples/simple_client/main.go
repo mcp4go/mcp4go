@@ -54,7 +54,7 @@ func main() {
 	t := transport.NewStdioTransport(transport.WithCommand(command, args...))
 
 	// Create client with options
-	c, err := client.NewClient(
+	c, cleanup, err := client.NewClient(
 		t,
 		client.WithClientInfo("mcp4go-simple-client", "0.1.0"),
 		client.WithRootsCapability(true),
@@ -62,7 +62,9 @@ func main() {
 	)
 	if err != nil {
 		log.Fatalf("Error creating client: %v", err)
+		return
 	}
+	defer cleanup()
 
 	// Connect to the server
 	log.Println("Connecting to MCP server...")
