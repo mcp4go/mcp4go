@@ -37,7 +37,7 @@ type JsonrpcResponse struct {
 	// Response ID matching the request ID (响应ID，与请求ID相匹配)
 	ID json.RawMessage `json:"id"`
 	// Result of the method call (方法调用的结果)
-	Result json.RawMessage `json:"result"`
+	Result json.RawMessage `json:"result,omitempty"`
 	// Error information, if any (错误信息，如果有的话)
 	Error *JsonrpcError `json:"error,omitempty"`
 }

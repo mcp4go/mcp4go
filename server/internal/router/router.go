@@ -181,6 +181,8 @@ func (x *Router) writeLoop(ctx context.Context, writer io.Writer) error {
 			return ctx.Err()
 		case pack := <-x.writePackCH:
 			encoder := json.NewEncoder(writer)
+			bs, _ := json.Marshal(pack)
+			x.log.Debugf(ctx, "write response: %+v\n", string(bs))
 			err := encoder.Encode(pack)
 			if err != nil {
 				return err
