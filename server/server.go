@@ -32,21 +32,16 @@ type Server struct {
 // NewServer creates a new server with the given transport and options
 func NewServer(transport transport.ITransport, opts ...Option) (*Server, func(), error) {
 	//nolint:govet
-	options, cleanup, err := defaultOptions()
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to create default options: %w", err)
-	}
+	options := defaultOptions()
 	for _, opt := range opts {
 		opt.apply(&options)
 	}
 
 	return &Server{
-			options:   options,
-			log:       logger.NewLogHelper(options.logger),
-			transport: transport,
-		}, func() {
-			cleanup()
-		}, nil
+		options:   options,
+		log:       logger.NewLogHelper(options.logger),
+		transport: transport,
+	}, func() {}, nil
 }
 
 func (x *Server) Run(ctx context.Context) error {

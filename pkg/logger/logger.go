@@ -6,7 +6,24 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"runtime"
 )
+
+var DefaultLog ILogger
+
+func init() {
+	var err error
+	DefaultLog, err = NewDefaultLogger("default", LevelDebug)
+	if err != nil {
+		panic(err)
+	}
+
+	runtime.SetFinalizer(DefaultLog, func(x ILogger) {
+		if x != nil {
+			_ = x.(*DefaultLogger).Close()
+		}
+	})
+}
 
 type Level uint32
 
@@ -42,24 +59,22 @@ type DefaultLogger struct {
 	logLevel Level
 }
 
-func NewDefaultLogger(module string, logLevel Level) (*DefaultLogger, func(), error) {
+func NewDefaultLogger(module string, logLevel Level) (*DefaultLogger, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to get user home directory: %w", err)
+		return nil, fmt.Errorf("failed to get user home directory: %w", err)
 	}
 	logDIR := filepath.Join(home, ".mcp4go")
 	_ = os.MkdirAll(logDIR, 0o755)
 	fw, err := os.OpenFile(filepath.Join(logDIR, module+".log"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o666)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to open log file: %w", err)
+		return nil, fmt.Errorf("failed to open log file: %w", err)
 	}
 	return &DefaultLogger{
-			fw:       fw,
-			logger:   slog.New(slog.NewTextHandler(fw, nil)),
-			logLevel: logLevel,
-		}, func() {
-			_ = fw.Close()
-		}, nil
+		fw:       fw,
+		logger:   slog.New(slog.NewTextHandler(fw, &slog.HandlerOptions{Level: slog.LevelDebug})),
+		logLevel: logLevel,
+	}, nil
 }
 
 func (x *DefaultLogger) Logf(_ context.Context, level Level, message string, args ...interface{}) {
@@ -77,6 +92,10 @@ func (x *DefaultLogger) Logf(_ context.Context, level Level, message string, arg
 	case LevelError:
 		x.logger.Error(fmt.Sprintf(message, args...))
 	}
+}
+
+func (x *DefaultLogger) Close() error {
+	return x.fw.Close()
 }
 
 type LogHelper struct {
