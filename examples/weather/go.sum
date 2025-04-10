@@ -1,5 +1,5 @@
-github.com/ccheers/xpkg v1.4.1 h1:V4TOVSDDPhKmHPHfbDFM5UgoNnonaxW+qheiLuKOck4=
-github.com/ccheers/xpkg v1.4.1/go.mod h1:Me/FH4SW80KBYp7X9Qoj3SCiCdYkzt+/98AESFJqx7w=
+github.com/ccheers/xpkg v1.4.2 h1:VKItaPrYFIPBMVIjyQfJTdepem3YQMP4R5DBsntGEHU=
+github.com/ccheers/xpkg v1.4.2/go.mod h1:Me/FH4SW80KBYp7X9Qoj3SCiCdYkzt+/98AESFJqx7w=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
