@@ -1,0 +1,56 @@
+codecov:
+require_ci_to_pass: yes
+notify:
+  wait_for_ci: yes
+  after_n_builds: 1
+
+coverage:
+  precision: 2
+  round: down
+  range: "70...100"
+  status:
+    project:
+      default:
+        # Adjust based on your expectations - fail if overall project coverage drops more than 1%
+        target: auto
+        threshold: 1%
+        # Only check for coverage changes on the main branch
+        branches:
+          - master
+          - main
+        if_ci_failed: error # fail the GitHub status if CI fails
+    # Check if patch coverage meets minimum standards
+    patch:
+      default:
+        target: 80%
+        threshold: 0%  # No threshold for new code
+        if_ci_failed: error
+    # Show changes in coverage
+    changes: yes
+
+parsers:
+  go:
+    partials_as_hits: true # Consider partial code coverage as hits (more lenient)
+
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+  require_changes: false  # if true: comment only if coverage changes
+  require_base: no
+  require_head: yes
+  branches:
+    - "master"
+    - "main"
+
+# Ignore test files and generated code if applicable
+ignore:
+  - "**/*_test.go"
+  - "**/mock_*.go"
+  - "**/mocks/**"
+  - "**/vendor/**"
+  - "**/testdata/**"
+  - "examples/**"
+
+# GitHub features
+github_checks:
+  annotations: true
