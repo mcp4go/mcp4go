@@ -8,20 +8,20 @@ import (
 	"github.com/mcp4go/mcp4go/server/iface"
 )
 
-// SetLevelHandler 处理logging/setLevel请求
+// Handle logging/setLevel request
 type SetLevelHandler struct {
-	// 当前日志级别
+	// Current log level
 	currentLevel protocol.LoggingLevel
 }
 
-// NewSetLevelHandler 创建一个SetLevelHandler实例
+// Create a new instance
 func NewSetLevelHandler() *SetLevelHandler {
 	return &SetLevelHandler{
-		currentLevel: protocol.LoggingLevelInfo, // 默认日志级别为Info
+		currentLevel: protocol.LoggingLevelInfo, // Default log level is Info
 	}
 }
 
-// Handle 处理logging/setLevel请求
+// Handle logging/setLevel request
 func (x *SetLevelHandler) Handle(_ context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.SetLevelRequest
 	err := json.Unmarshal(message, &req)
@@ -29,30 +29,30 @@ func (x *SetLevelHandler) Handle(_ context.Context, message json.RawMessage) (js
 		return nil, err
 	}
 
-	// 设置新的日志级别
+	// Set new log level
 	x.currentLevel = req.Level
 
 	result := protocol.SetLevelResult{}
 	return json.Marshal(result)
 }
 
-// Method 返回此处理程序对应的MCP方法
+// Returns the result
 func (x *SetLevelHandler) Method() protocol.McpMethod {
 	return protocol.MethodSetLevel
 }
 
-// GetCurrentLevel 获取当前日志级别
+// Get the specified data
 func (x *SetLevelHandler) GetCurrentLevel() protocol.LoggingLevel {
 	return x.currentLevel
 }
 
-// LoggingMessageSender 用于发送日志消息
+// LoggingMessageSender used for sending log messages
 type LoggingMessageSender struct {
 	logChan      chan<- protocol.LoggingMessageNotification
 	levelHandler *SetLevelHandler
 }
 
-// NewLoggingMessageSender 创建一个LoggingMessageSender实例
+// Create a new instance
 func NewLoggingMessageSender(
 	bus iface.EventBus,
 	levelHandler *SetLevelHandler,
@@ -64,7 +64,7 @@ func NewLoggingMessageSender(
 	}
 }
 
-// LogLevelMap 日志级别映射表，用于比较日志级别
+// LogLevelMap maps log levels for comparison
 var LogLevelMap = map[protocol.LoggingLevel]int{
 	protocol.LoggingLevelDebug:     0,
 	protocol.LoggingLevelInfo:      1,
@@ -76,13 +76,13 @@ var LogLevelMap = map[protocol.LoggingLevel]int{
 	protocol.LoggingLevelEmergency: 7,
 }
 
-// SendLogMessage 发送日志消息，如果消息级别低于当前设置的级别则不发送
+// SendLogMessage sends log messages, but won't send if the message level is below the current level setting
 func (x *LoggingMessageSender) SendLogMessage(level protocol.LoggingLevel, logger string, data interface{}) error {
-	// 检查消息级别是否应该被发送
+	// Check if the message level should be sent
 	currentLevel := x.levelHandler.GetCurrentLevel()
 
 	if LogLevelMap[level] < LogLevelMap[currentLevel] {
-		// 消息级别低于当前设置的级别，不发送
+		// Message level is below the current level, don't send
 		return nil
 	}
 
@@ -96,7 +96,7 @@ func (x *LoggingMessageSender) SendLogMessage(level protocol.LoggingLevel, logge
 	return nil
 }
 
-// 便捷方法用于发送不同级别的日志
+// Convenience methods for sending logs at different levels
 func (x *LoggingMessageSender) Debug(logger string, data interface{}) error {
 	return x.SendLogMessage(protocol.LoggingLevelDebug, logger, data)
 }

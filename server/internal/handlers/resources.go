@@ -9,17 +9,17 @@ import (
 	"github.com/mcp4go/mcp4go/server/iface"
 )
 
-// ListResourcesHandler 处理resources/list请求
+// Handle resources/list request
 type ListResourcesHandler struct {
 	resource iface.IResource
 }
 
-// NewListResourcesHandler 创建一个ListResourcesHandler实例
+// Create a new instance
 func NewListResourcesHandler(resource iface.IResource) *ListResourcesHandler {
 	return &ListResourcesHandler{resource: resource}
 }
 
-// Handle 处理resources/list请求
+// Handle resources/list request
 func (x *ListResourcesHandler) Handle(ctx context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.ListResourcesRequest
 	err := json.Unmarshal(message, &req)
@@ -41,24 +41,24 @@ func (x *ListResourcesHandler) Handle(ctx context.Context, message json.RawMessa
 	return json.Marshal(result)
 }
 
-// Method 返回此处理程序对应的MCP方法
+// Returns the result
 func (x *ListResourcesHandler) Method() protocol.McpMethod {
 	return protocol.MethodListResources
 }
 
-// ReadResourceHandler 处理resources/read请求
+// Handle resources/read request
 type ReadResourceHandler struct {
 	resource iface.IResource
 }
 
-// NewReadResourceHandler 创建一个ReadResourceHandler实例
+// Create a new instance
 func NewReadResourceHandler(resource iface.IResource) *ReadResourceHandler {
 	return &ReadResourceHandler{
 		resource: resource,
 	}
 }
 
-// Handle 处理resources/read请求
+// Handle resources/read request
 func (x *ReadResourceHandler) Handle(ctx context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.ReadResourceRequest
 	err := json.Unmarshal(message, &req)
@@ -66,7 +66,7 @@ func (x *ReadResourceHandler) Handle(ctx context.Context, message json.RawMessag
 		return nil, err
 	}
 
-	// 根据URI读取相应的资源内容
+	// Read the resource content based on the URI
 	contents, err := x.resource.Query(ctx, req.URI)
 	if err != nil {
 		return nil, fmt.Errorf("query resources failed: %w", err)
@@ -79,24 +79,24 @@ func (x *ReadResourceHandler) Handle(ctx context.Context, message json.RawMessag
 	return json.Marshal(result)
 }
 
-// Method 返回此处理程序对应的MCP方法
+// Returns the result
 func (x *ReadResourceHandler) Method() protocol.McpMethod {
 	return protocol.MethodReadResource
 }
 
-// ListResourceTemplatesHandler 处理resources/templates/list请求
+// Handle resources/templates/list request
 type ListResourceTemplatesHandler struct {
 	resource iface.IResource
 }
 
-// NewListResourceTemplatesHandler 创建一个ListResourceTemplatesHandler实例
+// Create a new instance
 func NewListResourceTemplatesHandler(resource iface.IResource) *ListResourceTemplatesHandler {
 	return &ListResourceTemplatesHandler{
 		resource: resource,
 	}
 }
 
-// Handle 处理resources/templates/list请求
+// Handle resources/templates/list request
 func (x *ListResourceTemplatesHandler) Handle(_ context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.ListResourceTemplatesRequest
 	err := json.Unmarshal(message, &req)
@@ -104,7 +104,7 @@ func (x *ListResourceTemplatesHandler) Handle(_ context.Context, message json.Ra
 		return nil, err
 	}
 
-	// 示例资源模板列表，在实际应用中应该从服务或数据库获取
+	// Example resource template list, in real applications this should be retrieved from a service or database
 	templates := x.resource.AccessList()
 
 	result := protocol.ListResourceTemplatesResult{
@@ -114,18 +114,18 @@ func (x *ListResourceTemplatesHandler) Handle(_ context.Context, message json.Ra
 	return json.Marshal(result)
 }
 
-// Method 返回此处理程序对应的MCP方法
+// Returns the result
 func (x *ListResourceTemplatesHandler) Method() protocol.McpMethod {
 	return protocol.MethodListResourceTemplates
 }
 
-// SubscribeHandler 处理resources/subscribe请求
+// Handle resources/subscribe request
 type SubscribeHandler struct {
 	resource iface.IResource
 	ch       chan<- protocol.ResourceUpdatedNotification
 }
 
-// NewSubscribeHandler 创建一个SubscribeHandler实例
+// Create a new instance
 func NewSubscribeHandler(
 	resource iface.IResource,
 	bus iface.EventBus,
@@ -137,7 +137,7 @@ func NewSubscribeHandler(
 	}
 }
 
-// Handle 处理resources/subscribe请求
+// Handle resources/subscribe request
 func (x *SubscribeHandler) Handle(ctx context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.SubscribeRequest
 	err := json.Unmarshal(message, &req)
@@ -145,8 +145,8 @@ func (x *SubscribeHandler) Handle(ctx context.Context, message json.RawMessage) 
 		return nil, err
 	}
 
-	// 这里应该实现实际的订阅逻辑，例如将URI添加到订阅列表中
-	// 在本示例中，我们只是返回一个成功响应
+	// Here should implement the actual subscription logic, such as adding the URI to the subscription list
+	// In this example, we just return a success response
 	err = x.resource.Watch(ctx, req.URI, x.ch)
 	if err != nil {
 		return nil, fmt.Errorf("subscribe failed: %w", err)
@@ -155,22 +155,22 @@ func (x *SubscribeHandler) Handle(ctx context.Context, message json.RawMessage) 
 	return json.Marshal(result)
 }
 
-// Method 返回此处理程序对应的MCP方法
+// Returns the result
 func (x *SubscribeHandler) Method() protocol.McpMethod {
 	return protocol.MethodSubscribe
 }
 
-// UnsubscribeHandler 处理resources/unsubscribe请求
+// Handle resources/unsubscribe request
 type UnsubscribeHandler struct {
 	resource iface.IResource
 }
 
-// NewUnsubscribeHandler 创建一个UnsubscribeHandler实例
+// Create a new instance
 func NewUnsubscribeHandler(resource iface.IResource) *UnsubscribeHandler {
 	return &UnsubscribeHandler{resource: resource}
 }
 
-// Handle 处理resources/unsubscribe请求
+// Handle resources/unsubscribe request
 func (x *UnsubscribeHandler) Handle(ctx context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.UnsubscribeRequest
 	err := json.Unmarshal(message, &req)
@@ -178,8 +178,8 @@ func (x *UnsubscribeHandler) Handle(ctx context.Context, message json.RawMessage
 		return nil, err
 	}
 
-	// 这里应该实现实际的取消订阅逻辑，例如从订阅列表中移除URI
-	// 在本示例中，我们只是返回一个成功响应
+	// Here should implement the actual unsubscribe logic, such as removing the URI from the subscription list
+	// In this example, we just return a success response
 	err = x.resource.CloseWatch(ctx, req.URI)
 	if err != nil {
 		return nil, fmt.Errorf("unsubscribe failed: %w", err)
@@ -189,7 +189,7 @@ func (x *UnsubscribeHandler) Handle(ctx context.Context, message json.RawMessage
 	return json.Marshal(result)
 }
 
-// Method 返回此处理程序对应的MCP方法
+// Returns the result
 func (x *UnsubscribeHandler) Method() protocol.McpMethod {
 	return protocol.MethodUnsubscribe
 }

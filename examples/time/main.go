@@ -25,7 +25,7 @@ func main() {
 	defer cancel()
 	_logger := logger.DefaultLog
 
-	// 监听中断信号，以便优雅退出
+	// Listen for interrupt signals for graceful exit
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM)
 	go func() {
@@ -34,9 +34,9 @@ func main() {
 		cancel()
 	}()
 
-	// 创建标准输入/输出传输层
+	// Create standard input/output transport layer
 	stdioTransport := transport.NewStdioTransport()
-	// 创建 MCP 服务器，并配置选项
+	// Create MCP server and configure options
 	srv, cleanup, err := server.NewServer(
 		stdioTransport,
 		server.WithServerInfo(protocol.Implementation{
@@ -52,7 +52,7 @@ func main() {
 	}
 	defer cleanup()
 
-	// 启动服务器
+	// Start the server
 	_logger.Logf(ctx, logger.LevelWarn, "Starting Time MCP server")
 	if err := srv.Run(ctx); err != nil {
 		_logger.Logf(ctx, logger.LevelError, "Server error: %v", err)

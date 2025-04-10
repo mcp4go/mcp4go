@@ -7,35 +7,34 @@ import (
 	"github.com/mcp4go/mcp4go/protocol"
 )
 
-// InitializedHandler 处理initialized通知
+// InitializedHandler handles initialized notifications
 type InitializedHandler struct{}
 
-// NewInitializedHandler 创建一个InitializedHandler实例
+// NewInitializedHandler creates a new InitializedHandler instance
 func NewInitializedHandler() *InitializedHandler {
 	return &InitializedHandler{}
 }
 
-// Handle 处理initialized通知
+// Handle processes initialized notifications
 func (x *InitializedHandler) Handle(_ context.Context, _ json.RawMessage) (json.RawMessage, error) {
-	// initialized是一个通知，不需要返回结果
-	// 在这里可以进行一些初始化工作
+	// Initialization work can be done here
 	return nil, nil
 }
 
-// Method 返回此处理程序对应的MCP方法
+// Method returns the handler's method
 func (x *InitializedHandler) Method() protocol.McpMethod {
 	return protocol.NotificationInitialized
 }
 
-// ShutdownHandler 处理shutdown请求
+// ShutdownHandler handles shutdown requests
 type ShutdownHandler struct{}
 
-// NewShutdownHandler 创建一个ShutdownHandler实例
+// NewShutdownHandler creates a new ShutdownHandler instance
 func NewShutdownHandler() *ShutdownHandler {
 	return &ShutdownHandler{}
 }
 
-// Handle 处理shutdown请求
+// Handle processes shutdown requests
 func (x *ShutdownHandler) Handle(_ context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.ShutdownRequest
 	err := json.Unmarshal(message, &req)
@@ -43,27 +42,27 @@ func (x *ShutdownHandler) Handle(_ context.Context, message json.RawMessage) (js
 		return nil, err
 	}
 
-	// 这里应该进行实际的关闭前清理工作
-	// 在本示例中，我们只是返回一个成功响应
+	// Actual cleanup work should be done here
+	// In this example, we just return a success response
 
 	result := protocol.ShutdownResult{}
 	return json.Marshal(result)
 }
 
-// Method 返回此处理程序对应的MCP方法
+// Method returns the handler's method
 func (x *ShutdownHandler) Method() protocol.McpMethod {
-	return "shutdown" // 注意：在constants.go中没有定义这个方法，根据实际需要可以添加
+	return "shutdown" // Note: This method is not defined in constants.go, can be added as needed
 }
 
-// CancelHandler 处理cancel请求
+// CancelHandler handles cancel requests
 type CancelHandler struct{}
 
-// NewCancelHandler 创建一个CancelHandler实例
+// NewCancelHandler creates a new CancelHandler instance
 func NewCancelHandler() *CancelHandler {
 	return &CancelHandler{}
 }
 
-// Handle 处理cancel请求
+// Handle processes cancel requests
 func (x *CancelHandler) Handle(_ context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.CancelRequest
 	err := json.Unmarshal(message, &req)
@@ -71,26 +70,26 @@ func (x *CancelHandler) Handle(_ context.Context, message json.RawMessage) (json
 		return nil, err
 	}
 
-	// 这里应该实现取消指定ID请求的逻辑
-	// 在本示例中，我们只是返回一个成功响应
+	// Logic to cancel requests with the specified ID should be implemented here
+	// In this example, we just return a success response
 
 	result := protocol.CancelResult{}
 	return json.Marshal(result)
 }
 
-// Method 返回此处理程序对应的MCP方法
+// Method returns the handler's method
 func (x *CancelHandler) Method() protocol.McpMethod {
-	return "$/cancelRequest" // 注意：在constants.go中没有定义这个方法，根据实际需要可以添加
+	return "$/cancelRequest" // Note: This method is not defined in constants.go, can be added as needed
 }
 
-// ProgressNotificationHandler 发送进度通知
+// ProgressNotificationHandler sends progress notifications
 type ProgressNotificationHandler struct {
 	gateway interface {
 		SendNotification(method string, params interface{}) error
 	}
 }
 
-// NewProgressNotificationHandler 创建一个ProgressNotificationHandler实例
+// NewProgressNotificationHandler creates a new ProgressNotificationHandler instance
 func NewProgressNotificationHandler(gateway interface {
 	SendNotification(method string, params interface{}) error
 },
@@ -101,7 +100,7 @@ func NewProgressNotificationHandler(gateway interface {
 	}
 }
 
-// SendProgress 发送进度通知
+// SendProgress sends a progress notification
 func (x *ProgressNotificationHandler) SendProgress(token protocol.ProgressToken, value int, message string) error {
 	params := protocol.ProgressParams{
 		Token:   token,

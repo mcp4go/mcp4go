@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	// 创建上下文，支持优雅关闭
+	// Create context, supporting graceful shutdown
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -27,7 +27,7 @@ func main() {
 	}
 	log.SetOutput(logFile)
 
-	// 监听中断信号，以便优雅退出
+	// Listen for interrupt signals for graceful exit
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM)
 	go func() {
@@ -36,15 +36,15 @@ func main() {
 		cancel()
 	}()
 
-	// 创建 weather 资源、提示和工具实例
+	// Create weather resources, prompts, and tool instances
 	weatherResource := NewWeatherResourceBuilder()
 	weatherPrompt := NewWeatherPromptBuilder()
 	weatherTool := NewWeatherToolBuilder()
 
-	// 创建标准输入/输出传输层
+	// Create standard input/output transport layer
 	stdioTransport := transport.NewStdioTransport()
 
-	// 创建 MCP 服务器，并配置选项
+	// Create MCP server and configure options
 	srv, cleanup, err := server.NewServer(
 		stdioTransport,
 		server.WithServerInfo(protocol.Implementation{
@@ -62,7 +62,7 @@ func main() {
 	}
 	defer cleanup()
 
-	// 启动服务器
+	// Start the server
 	log.Println("Starting Weather MCP server")
 	if err := srv.Run(ctx); err != nil {
 		log.Fatalf("Server error: %v", err)

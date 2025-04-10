@@ -1,10 +1,14 @@
 <p align="center">
-<a href="https://github.com/mcp4go/mcp4go/actions"><img src="https://github.com/mcp4go/mcp4go/workflows/Go/badge.svg?v=1231" alt="Build Status"></a>
+
+<a href="https://github.com/mcp4go/mcp4go/actions/workflows/go.yml"><img src="https://github.com/mcp4go/mcp4go/actions/workflows/go.yml/badge.svg?v=1231" alt="Go Test"></a>
+<a href="https://github.com/mcp4go/mcp4go/actions/workflows/lint.yml"><img src="https://github.com/mcp4go/mcp4go/actions/workflows/lint.yml/badge.svg?v=1231" alt="Lint"></a>
+<a href="https://github.com/mcp4go/mcp4go/actions/workflows/codeql.yml"><img src="https://github.com/mcp4go/mcp4go/actions/workflows/codeql.yml/badge.svg?v=1231" alt="codeql"></a>
 <a href="https://pkg.go.dev/github.com/mcp4go/mcp4go"><img src="https://pkg.go.dev/badge/github.com/mcp4go/mcp4go?v=1231" alt="GoDoc"></a>
-<a href="https://codecov.io/gh/mcp4go/mcp4go"><img src="https://codecov.io/gh/mcp4go/mcp4go/master/graph/badge.svg?v=1231" alt="codeCov"></a>
+<a href="https://codecov.io/gh/mcp4go/mcp4go"><img src="https://codecov.io/gh/mcp4go/mcp4go/master/graph/badge.svg?v=1231" alt="CodeCover"></a>
 <a href="https://goreportcard.com/report/github.com/mcp4go/mcp4go"><img src="https://goreportcard.com/badge/github.com/mcp4go/mcp4go?v=1231" alt="Go Report Card"></a>
 <a href="https://github.com/mcp4go/mcp4go/blob/main/LICENSE"><img src="https://img.shields.io/github/license/mcp4go/mcp4go?v=1231" alt="License"></a>
-<a href="https://github.com/avelino/awesome-go"><img src="https://awesome.re/mentioned-badge.svg?v=1231" alt="Awesome Go"></a>
+<a href="https://github.com/mcp4go/mcp4go/releases"><img src="https://img.shields.io/github/v/release/mcp4go/mcp4go?v=1231" alt="Release"></a>
+
 </p>
 
 # MCP4Go
@@ -59,7 +63,7 @@ func main() {
 	defer cancel()
 	_logger := logger.DefaultLog
 
-	// 监听中断信号，以便优雅退出
+	// Listen for interrupt signals for graceful exit
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM)
 	go func() {
@@ -68,9 +72,9 @@ func main() {
 		cancel()
 	}()
 
-	// 创建标准输入/输出传输层
+	// Create standard input/output transport layer
 	stdioTransport := transport.NewStdioTransport()
-	// 创建 MCP 服务器，并配置选项
+	// Create MCP server and configure options
 	srv, cleanup, err := server.NewServer(
 		stdioTransport,
 		server.WithServerInfo(protocol.Implementation{
@@ -86,7 +90,7 @@ func main() {
 	}
 	defer cleanup()
 
-	// 启动服务器
+	// Start the server
 	_logger.Logf(ctx, logger.LevelWarn, "Starting Time MCP server")
 	if err := srv.Run(ctx); err != nil {
 		_logger.Logf(ctx, logger.LevelError, "Server error: %v", err)
