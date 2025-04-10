@@ -6,6 +6,6 @@ toolchain go1.24.0
 
 require github.com/mcp4go/mcp4go v0.0.0
 
-require github.com/ccheers/xpkg v1.4.1 // indirect
+require github.com/ccheers/xpkg v1.4.2 // indirect
 
 replace github.com/mcp4go/mcp4go => ../../

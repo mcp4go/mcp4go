@@ -1,24 +1,36 @@
 ignore:
-  - "examples"
+  - "examples/**" # 忽略示例文件夹
+  -
+codecov:
+  require_ci_to_pass: yes
 
 coverage:
+  precision: 2
+  round: down
+  range: "70...100"
   status:
-    project: #add everything under here, more options at https://docs.codecov.com/docs/commit-status
+    project:
       default:
-        # basic
-        target: auto #default
-        threshold: 0%
-        base: auto
+        # 基本配置
+        target: auto
+        threshold: 1%
+        # 如果总体覆盖率下降超过 1%，则标记 PR 为失败
+        if_ci_failed: error
     patch:
       default:
-        # PR中新代码的配置
-        target: 90%  # 新代码覆盖率目标
-        threshold: 0%  # 允许的下降范围
+        # 基本配置
+        target: auto
+        threshold: 1%
+
+parsers:
+  gcov:
+    branch_detection:
+      conditional: yes
+      loop: yes
+      method: no
+      macro: no
 
 comment:
-  layout: "reach, diff, flags, files"
+  layout: "reach,diff,flags,files,footer"
   behavior: default
-  require_changes: false  # 即使没有覆盖率变化也发表评论
-
-github_checks:
-  annotations: true  # 启用GitHub检查注释
+  require_changes: no

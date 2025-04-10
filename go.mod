@@ -3,7 +3,7 @@ module github.com/mcp4go/mcp4go
 go 1.22.12
 
 require (
-	github.com/ccheers/xpkg v1.4.1
+	github.com/ccheers/xpkg v1.4.2
 	github.com/google/wire v0.6.0
 )
 
