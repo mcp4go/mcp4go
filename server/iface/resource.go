@@ -12,12 +12,12 @@ type IPromptBuilder interface {
 	ListChanged() bool
 }
 
-// IPrompt 定义了提示功能的接口
+// IPrompt defines the prompt functionality interface
 type IPrompt interface {
-	// List 返回可用的提示列表
+	// List returns available prompts
 	List(ctx context.Context, cursor string) ([]protocol.Prompt, string, error)
 
-	// Get 根据提示名称和参数获取提示内容
+	// Get returns a specific prompt with the given name and arguments
 	Get(ctx context.Context, name string, arguments map[string]string) (string, []protocol.PromptMessage, error)
 
 	StartWatchListChanged(ctx context.Context, uri string, ch chan<- protocol.PromptListChangedNotification) error
@@ -29,7 +29,7 @@ type IResourceBuilder interface {
 	ListChanged() bool
 }
 
-// IResource 定义了资源接口
+// IResource defines the resource interface
 type IResource interface {
 	AccessList() []protocol.ResourceTemplate
 
@@ -47,12 +47,12 @@ type IToolBuilder interface {
 	ListChanged() bool
 }
 
-// ITool 定义了工具功能的接口
+// ITool defines the tool functionality interface
 type ITool interface {
-	// List 返回可用的工具列表
+	// List returns available tools
 	List(ctx context.Context, cursor string) ([]protocol.Tool, string, error)
 
-	// Call 调用指定工具执行操作
+	// Call invokes the specified tool operation
 	Call(ctx context.Context, name string, argsJSON json.RawMessage) ([]protocol.Content, error)
 
 	StartWatchListChanged(ctx context.Context, uri string, ch chan<- protocol.ToolListChangedNotification) error

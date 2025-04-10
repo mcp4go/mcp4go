@@ -9,17 +9,17 @@ import (
 	"github.com/mcp4go/mcp4go/server/iface"
 )
 
-// ListPromptsHandler 处理prompts/list请求
+// Handle prompts/list request
 type ListPromptsHandler struct {
 	prompt iface.IPrompt
 }
 
-// NewListPromptsHandler 创建一个ListPromptsHandler实例
+// Create a new instance
 func NewListPromptsHandler(prompt iface.IPrompt) *ListPromptsHandler {
 	return &ListPromptsHandler{prompt: prompt}
 }
 
-// Handle 处理prompts/list请求
+// Handle prompts/list request
 func (x *ListPromptsHandler) Handle(ctx context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.ListPromptsRequest
 	err := json.Unmarshal(message, &req)
@@ -40,22 +40,22 @@ func (x *ListPromptsHandler) Handle(ctx context.Context, message json.RawMessage
 	return json.Marshal(result)
 }
 
-// Method 返回此处理程序对应的MCP方法
+// Returns the result
 func (x *ListPromptsHandler) Method() protocol.McpMethod {
 	return protocol.MethodListPrompts
 }
 
-// GetPromptHandler 处理prompts/get请求
+// Handle prompts/get request
 type GetPromptHandler struct {
 	prompt iface.IPrompt
 }
 
-// NewGetPromptHandler 创建一个GetPromptHandler实例
+// Create a new instance
 func NewGetPromptHandler(prompt iface.IPrompt) *GetPromptHandler {
 	return &GetPromptHandler{prompt: prompt}
 }
 
-// Handle 处理prompts/get请求
+// Handle prompts/get request
 func (x *GetPromptHandler) Handle(ctx context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.GetPromptRequest
 	err := json.Unmarshal(message, &req)
@@ -76,7 +76,7 @@ func (x *GetPromptHandler) Handle(ctx context.Context, message json.RawMessage) 
 	return json.Marshal(result)
 }
 
-// Method 返回此处理程序对应的MCP方法
+// Returns the result
 func (x *GetPromptHandler) Method() protocol.McpMethod {
 	return protocol.MethodGetPrompt
 }

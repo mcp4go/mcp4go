@@ -9,17 +9,17 @@ import (
 	"github.com/mcp4go/mcp4go/server/iface"
 )
 
-// ListToolsHandler 处理tools/list请求
+// Handle tools/list request
 type ListToolsHandler struct {
 	tool iface.ITool
 }
 
-// NewListToolsHandler 创建一个ListToolsHandler实例
+// Create a new instance
 func NewListToolsHandler(tool iface.ITool) *ListToolsHandler {
 	return &ListToolsHandler{tool: tool}
 }
 
-// Handle 处理tools/list请求
+// Handle tools/list request
 func (x *ListToolsHandler) Handle(ctx context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.ListToolsRequest
 	err := json.Unmarshal(message, &req)
@@ -40,22 +40,22 @@ func (x *ListToolsHandler) Handle(ctx context.Context, message json.RawMessage) 
 	return json.Marshal(result)
 }
 
-// Method 返回此处理程序对应的MCP方法
+// Returns the result
 func (x *ListToolsHandler) Method() protocol.McpMethod {
 	return protocol.MethodListTools
 }
 
-// CallToolHandler 处理tools/call请求
+// Handle tools/call request
 type CallToolHandler struct {
 	tool iface.ITool
 }
 
-// NewCallToolHandler 创建一个CallToolHandler实例
+// Create a new instance
 func NewCallToolHandler(tool iface.ITool) *CallToolHandler {
 	return &CallToolHandler{tool: tool}
 }
 
-// Handle 处理tools/call请求
+// Handle tools/call request
 func (x *CallToolHandler) Handle(ctx context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.CallToolRequest
 	err := json.Unmarshal(message, &req)
@@ -75,7 +75,7 @@ func (x *CallToolHandler) Handle(ctx context.Context, message json.RawMessage) (
 	return json.Marshal(result)
 }
 
-// Method 返回此处理程序对应的MCP方法
+// Returns the result
 func (x *CallToolHandler) Method() protocol.McpMethod {
 	return protocol.MethodCallTool
 }

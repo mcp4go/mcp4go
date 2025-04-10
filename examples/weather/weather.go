@@ -30,10 +30,10 @@ func (x *WeatherResourceBuilder) ListChanged() bool {
 	return false
 }
 
-// WeatherResource 实现了 IResource 接口，提供天气数据资源
+// WeatherResource implements the IResource interface, providing weather data resources
 type WeatherResource struct{}
 
-// AccessList 返回可用的天气资源模板列表
+// AccessList returns a list of available weather resource templates
 func (w *WeatherResource) AccessList() []protocol.ResourceTemplate {
 	return []protocol.ResourceTemplate{
 		{
@@ -45,9 +45,9 @@ func (w *WeatherResource) AccessList() []protocol.ResourceTemplate {
 	}
 }
 
-// List 返回可用的天气资源列表
+// List returns a list of available weather resources
 func (w *WeatherResource) List(ctx context.Context, cursor string) ([]protocol.Resource, string, error) {
-	// 这里可以返回一些示例城市的天气资源
+	// This can return weather resources for some example cities
 	resources := []protocol.Resource{
 		{
 			URI:         "weather:city/beijing",
@@ -72,10 +72,10 @@ func (w *WeatherResource) List(ctx context.Context, cursor string) ([]protocol.R
 	return resources, "", nil
 }
 
-// Query 查询特定URI的天气资源内容
+// Query queries the content of a specific URI weather resource
 func (w *WeatherResource) Query(ctx context.Context, uri string) ([]protocol.ResourceContent, error) {
-	// 在实际应用中，这里应该调用外部API获取真实天气数据
-	// 这里简单模拟一些天气数据
+	// In a real application, this should call an external API to get real weather data
+	// Here, we simply simulate some weather data
 	weatherData := map[string]interface{}{
 		"temperature": 25,
 		"humidity":    70,
@@ -93,10 +93,10 @@ func (w *WeatherResource) Query(ctx context.Context, uri string) ([]protocol.Res
 	}, nil
 }
 
-// Watch 开始监视特定URI的天气资源更新
+// Watch starts monitoring updates for a specific URI weather resource
 func (w *WeatherResource) Watch(ctx context.Context, uri string, ch chan<- protocol.ResourceUpdatedNotification) error {
-	// 在实际应用中，这里应该实现一个定时任务来更新天气数据
-	// 简单模拟每10秒更新一次天气
+	// In a real application, this should implement a scheduled task to update weather data
+	// Simply simulate weather updates every 10 seconds
 	go func() {
 		ticker := time.NewTicker(10 * time.Second)
 		defer ticker.Stop()
@@ -106,7 +106,7 @@ func (w *WeatherResource) Watch(ctx context.Context, uri string, ch chan<- proto
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				// 发送资源更新通知
+				// Send resource update notification
 				ch <- protocol.ResourceUpdatedNotification{
 					URI: uri,
 				}
@@ -117,15 +117,15 @@ func (w *WeatherResource) Watch(ctx context.Context, uri string, ch chan<- proto
 	return nil
 }
 
-// CloseWatch 关闭对特定URI的监视
+// CloseWatch closes monitoring for a specific URI
 func (w *WeatherResource) CloseWatch(ctx context.Context, uri string) error {
-	// 这里应该清理与URI相关的监视资源
+	// This should clean up resources related to the URI monitoring
 	return nil
 }
 
-// StartWatchListChanged 开始监视资源列表变更
+// StartWatchListChanged starts monitoring for resource list changes
 func (w *WeatherResource) StartWatchListChanged(ctx context.Context, uri string, ch chan<- protocol.ResourceListChangedNotification) error {
-	// 在当前示例中不支持资源列表变更，直接返回nil
+	// In the current example, resource list changes are not supported, directly return nil
 	return nil
 }
 
@@ -143,10 +143,10 @@ func (x *WeatherPromptBuilder) ListChanged() bool {
 	return false
 }
 
-// WeatherPrompt 实现了 IPrompt 接口，提供与天气相关的提示
+// WeatherPrompt implements the IPrompt interface, providing weather-related prompts
 type WeatherPrompt struct{}
 
-// List 返回可用的天气提示列表
+// List returns a list of available weather prompts
 func (p *WeatherPrompt) List(ctx context.Context, cursor string) ([]protocol.Prompt, string, error) {
 	return []protocol.Prompt{
 		{
@@ -163,7 +163,7 @@ func (p *WeatherPrompt) List(ctx context.Context, cursor string) ([]protocol.Pro
 	}, "", nil
 }
 
-// Get 获取特定名称和参数的天气提示
+// Get gets a specific prompt by name and arguments
 func (p *WeatherPrompt) Get(ctx context.Context, name string, arguments map[string]string) (string, []protocol.PromptMessage, error) {
 	if name != "weather_report" {
 		return "", nil, fmt.Errorf("unknown prompt: %s", name)
@@ -174,7 +174,7 @@ func (p *WeatherPrompt) Get(ctx context.Context, name string, arguments map[stri
 		return "", nil, fmt.Errorf("missing required argument: city")
 	}
 
-	// 生成提示信息
+	// Generate prompt information
 	description := fmt.Sprintf("Weather report for %s", city)
 	messages := []protocol.PromptMessage{
 		{
@@ -196,9 +196,9 @@ func (p *WeatherPrompt) Get(ctx context.Context, name string, arguments map[stri
 	return description, messages, nil
 }
 
-// StartWatchListChanged 开始监视提示列表变更
+// StartWatchListChanged starts monitoring for prompt list changes
 func (p *WeatherPrompt) StartWatchListChanged(ctx context.Context, uri string, ch chan<- protocol.PromptListChangedNotification) error {
-	// 在当前示例中不支持提示列表变更，直接返回nil
+	// In the current example, prompt list changes are not supported, directly return nil
 	return nil
 }
 
@@ -216,10 +216,10 @@ func (x *WeatherToolBuilder) ListChanged() bool {
 	return false
 }
 
-// WeatherTool 实现了 ITool 接口，提供与天气相关的工具
+// WeatherTool implements the ITool interface, providing weather-related tools
 type WeatherTool struct{}
 
-// List 返回可用的天气工具列表
+// List returns a list of available weather tools
 func (t *WeatherTool) List(ctx context.Context, cursor string) ([]protocol.Tool, string, error) {
 	return []protocol.Tool{
 		{
@@ -262,7 +262,7 @@ type WeatherArgs struct {
 	Days int    `json:"days"`
 }
 
-// Call 调用特定名称和参数的天气工具
+// Call calls a specific weather tool with the given name and arguments
 func (t *WeatherTool) Call(ctx context.Context, name string, arguments json.RawMessage) ([]protocol.Content, error) {
 	var dst WeatherArgs
 	err := json.Unmarshal(arguments, &dst)
@@ -273,8 +273,8 @@ func (t *WeatherTool) Call(ctx context.Context, name string, arguments json.RawM
 	case "get_weather":
 		city := dst.City
 
-		// 在实际应用中，这里应该调用外部API获取真实天气数据
-		// 这里简单模拟返回一些天气数据
+		// In a real application, this should call an external API to get real weather data
+		// Here, we simply return some simulated weather data
 		return []protocol.Content{
 			protocol.NewTextContent(fmt.Sprintf("Current weather in %s: 25°C, Sunny, Humidity: 70%%", city), nil),
 		}, nil
@@ -282,19 +282,19 @@ func (t *WeatherTool) Call(ctx context.Context, name string, arguments json.RawM
 	case "get_forecast":
 		city := dst.City
 
-		days := 3 // 默认值
+		days := 3 // Default value
 		if dst.Days > 0 {
 			days = dst.Days
 			if days > 5 {
-				days = 5 // 最多5天
+				days = 5 // Maximum 5 days
 			}
 		}
 
-		// 模拟天气预报数据
+		// Simulate weather forecast data
 		var forecast string
 		for i := 0; i < days; i++ {
 			date := time.Now().AddDate(0, 0, i).Format("2006-01-02")
-			temp := 20 + i // 简单模拟温度变化
+			temp := 20 + i // Simple temperature simulation
 			forecast += fmt.Sprintf("%s: %d°C, %s\n", date, temp, []string{"Sunny", "Cloudy", "Rainy"}[i%3])
 		}
 
@@ -309,28 +309,28 @@ func (t *WeatherTool) Call(ctx context.Context, name string, arguments json.RawM
 	}
 }
 
-// StartWatchListChanged 开始监视工具列表变更
+// StartWatchListChanged starts monitoring for tool list changes
 func (t *WeatherTool) StartWatchListChanged(ctx context.Context, uri string, ch chan<- protocol.ToolListChangedNotification) error {
-	// 在当前示例中不支持工具列表变更，直接返回nil
+	// In the current example, tool list changes are not supported, directly return nil
 	return nil
 }
 
-// NewWeatherResource 创建一个新的 WeatherResource 实例
+// NewWeatherResource creates a new WeatherResource instance
 func NewWeatherResource() *WeatherResource {
 	return &WeatherResource{}
 }
 
-// NewWeatherPrompt 创建一个新的 WeatherPrompt 实例
+// NewWeatherPrompt creates a new WeatherPrompt instance
 func NewWeatherPrompt() *WeatherPrompt {
 	return &WeatherPrompt{}
 }
 
-// NewWeatherTool 创建一个新的 WeatherTool 实例
+// NewWeatherTool creates a new WeatherTool instance
 func NewWeatherTool() *WeatherTool {
 	return &WeatherTool{}
 }
 
-// WeatherServer 包含 MCP 服务器的配置和组件
+// WeatherServer contains MCP server configuration and components
 type WeatherServer struct {
 	Resource *WeatherResource
 	Prompt   *WeatherPrompt
@@ -338,7 +338,7 @@ type WeatherServer struct {
 	Server   *server.Server
 }
 
-// NewWeatherServer 创建一个新的 WeatherServer 实例
+// NewWeatherServer creates a new WeatherServer instance
 func NewWeatherServer() *WeatherServer {
 	return &WeatherServer{
 		Resource: NewWeatherResource(),
