@@ -141,7 +141,7 @@ func (x *Router) readLoop(ctx context.Context, reader io.Reader) error {
 			var req protocol.JsonrpcRequest
 			err := decoder.Decode(&req)
 			if err != nil {
-				return err
+				return fmt.Errorf("decode error: %w", err)
 			}
 
 			x.log.Debugf(ctx, "#%s. method[%s] params[%s]\n", req.GetID(), req.Method, string(req.Params))
@@ -169,7 +169,7 @@ func (x *Router) readLoop(ctx context.Context, reader io.Reader) error {
 			return nil
 		}()
 		if err != nil {
-			return err
+			return fmt.Errorf("[Router][readLoop] read error: %w", err)
 		}
 	}
 }
