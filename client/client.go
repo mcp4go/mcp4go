@@ -32,7 +32,7 @@ type Client struct {
 	mu          sync.Mutex
 
 	// Handlers
-	notificationHandlers map[string]NotificationHandler
+	notificationHandlers map[protocol.McpMethod]NotificationHandler
 	responseHandlers     map[int]chan *protocol.JsonrpcResponse
 
 	writeChan chan json.RawMessage
@@ -172,7 +172,7 @@ func NewClient(t transport.ITransport, opts ...Option) (*Client, func(), error) 
 		eg:                   nil,
 		initialized:          false,
 		mu:                   sync.Mutex{},
-		notificationHandlers: make(map[string]NotificationHandler),
+		notificationHandlers: make(map[protocol.McpMethod]NotificationHandler),
 		responseHandlers:     make(map[int]chan *protocol.JsonrpcResponse),
 		writeChan:            make(chan json.RawMessage, 1024),
 		serverCapabilities:   protocol.ServerCapabilities{},
@@ -276,7 +276,7 @@ func (x *Client) writeLoop(ctx context.Context, writer io.Writer) {
 func (x *Client) registerNotificationHandlers() {
 	// Register resource notification handlers
 	if x.options.resourcesListChangedHandler != nil {
-		x.notificationHandlers[string(protocol.NotificationResourcesListChanged)] = func(ctx context.Context, message json.RawMessage) error {
+		x.notificationHandlers[protocol.NotificationResourcesListChanged] = func(ctx context.Context, message json.RawMessage) error {
 			var dst protocol.ResourceListChangedNotification
 			if err := json.Unmarshal(message, &dst); err != nil {
 				return fmt.Errorf("failed to unmarshal resources list changed notification: %w", err)
@@ -285,7 +285,7 @@ func (x *Client) registerNotificationHandlers() {
 		}
 	}
 	if x.options.resourcesUpdatedHandler != nil {
-		x.notificationHandlers[string(protocol.NotificationResourcesUpdated)] = func(ctx context.Context, message json.RawMessage) error {
+		x.notificationHandlers[protocol.NotificationResourcesUpdated] = func(ctx context.Context, message json.RawMessage) error {
 			var dst protocol.ResourceUpdatedNotification
 			if err := json.Unmarshal(message, &dst); err != nil {
 				return fmt.Errorf("failed to unmarshal resources updated notification: %w", err)
@@ -296,7 +296,7 @@ func (x *Client) registerNotificationHandlers() {
 
 	// Register tool notification handlers
 	if x.options.toolsListChangedHandler != nil {
-		x.notificationHandlers[string(protocol.NotificationToolsListChanged)] = func(ctx context.Context, message json.RawMessage) error {
+		x.notificationHandlers[protocol.NotificationToolsListChanged] = func(ctx context.Context, message json.RawMessage) error {
 			var dst protocol.ToolListChangedNotification
 			if err := json.Unmarshal(message, &dst); err != nil {
 				return fmt.Errorf("failed to unmarshal tools list changed notification: %w", err)
@@ -307,7 +307,7 @@ func (x *Client) registerNotificationHandlers() {
 
 	// Register prompt notification handlers
 	if x.options.promptsListChangedHandler != nil {
-		x.notificationHandlers[string(protocol.NotificationPromptsListChanged)] = func(ctx context.Context, message json.RawMessage) error {
+		x.notificationHandlers[protocol.NotificationPromptsListChanged] = func(ctx context.Context, message json.RawMessage) error {
 			var dst protocol.PromptListChangedNotification
 			if err := json.Unmarshal(message, &dst); err != nil {
 				return fmt.Errorf("failed to unmarshal prompts list changed notification: %w", err)
@@ -318,7 +318,7 @@ func (x *Client) registerNotificationHandlers() {
 
 	// Register roots notification handlers
 	if x.options.rootsListChangedHandler != nil {
-		x.notificationHandlers[string(protocol.NotificationRootsListChanged)] = func(ctx context.Context, message json.RawMessage) error {
+		x.notificationHandlers[protocol.NotificationRootsListChanged] = func(ctx context.Context, message json.RawMessage) error {
 			var dst protocol.RootsListChangedNotification
 			if err := json.Unmarshal(message, &dst); err != nil {
 				return fmt.Errorf("failed to unmarshal roots list changed notification: %w", err)
@@ -329,7 +329,7 @@ func (x *Client) registerNotificationHandlers() {
 
 	// Register logging notification handlers
 	if x.options.loggingMessageHandler != nil {
-		x.notificationHandlers[string(protocol.NotificationLoggingMessage)] = func(ctx context.Context, message json.RawMessage) error {
+		x.notificationHandlers[protocol.NotificationLoggingMessage] = func(ctx context.Context, message json.RawMessage) error {
 			var dst protocol.LoggingMessageNotification
 			if err := json.Unmarshal(message, &dst); err != nil {
 				return fmt.Errorf("failed to unmarshal logging message notification: %w", err)
@@ -350,7 +350,7 @@ func (x *Client) initialize(ctx context.Context) error {
 
 	// Send initialize request
 	var initResult protocol.InitializeResult
-	err := x.sendRequest(ctx, string(protocol.MethodInitialize), initRequest, &initResult)
+	err := x.sendRequest(ctx, protocol.MethodInitialize, initRequest, &initResult)
 	if err != nil {
 		return fmt.Errorf("initialize request failed: %w", err)
 	}
@@ -395,7 +395,7 @@ func (x *Client) handleMessage(ctx context.Context, message json.RawMessage) {
 }
 
 // handleNotification processes a notification from the server
-func (x *Client) handleNotification(ctx context.Context, method string, params json.RawMessage) {
+func (x *Client) handleNotification(ctx context.Context, method protocol.McpMethod, params json.RawMessage) {
 	// Find handler for this notification
 	handler, ok := x.notificationHandlers[method]
 	if !ok {
@@ -437,7 +437,7 @@ func (x *Client) handleResponse(ctx context.Context, response *protocol.JsonrpcR
 }
 
 // sendRequest sends a request to the server and waits for the response
-func (x *Client) sendRequest(ctx context.Context, method string, params interface{}, result interface{}) error {
+func (x *Client) sendRequest(ctx context.Context, method protocol.McpMethod, params interface{}, result interface{}) error {
 	// Generate request ID
 	id := atomic.AddInt64(&x.requestID, 1)
 
@@ -453,12 +453,11 @@ func (x *Client) sendRequest(ctx context.Context, method string, params interfac
 
 	idBs, _ := json.Marshal(id)
 	// Create JSON-RPC request
-	request := protocol.JsonrpcRequest{
-		Jsonrpc: protocol.JSONRPCVersion,
-		ID:      idBs,
-		Method:  method,
-		Params:  paramsBytes,
-	}
+	request := protocol.NewJsonrpcRequest(
+		idBs,
+		method,
+		paramsBytes,
+	)
 
 	// Create response channel
 	responseCh := make(chan *protocol.JsonrpcResponse, 1)
@@ -509,7 +508,7 @@ func (x *Client) sendRequest(ctx context.Context, method string, params interfac
 }
 
 // sendNotification sends a notification to the server
-func (x *Client) sendNotification(ctx context.Context, method string, params interface{}) error {
+func (x *Client) sendNotification(ctx context.Context, method protocol.McpMethod, params interface{}) error {
 	// Marshal params
 	var paramsBytes json.RawMessage
 	if params != nil {
@@ -521,11 +520,7 @@ func (x *Client) sendNotification(ctx context.Context, method string, params int
 	}
 
 	// Create JSON-RPC notification
-	notification := protocol.JsonrpcNotification{
-		Jsonrpc: protocol.JSONRPCVersion,
-		Method:  method,
-		Params:  paramsBytes,
-	}
+	notification := protocol.NewJsonrpcNotification(method, paramsBytes)
 
 	// Marshal and send notification
 	notificationBytes, err := json.Marshal(notification)
@@ -584,7 +579,7 @@ func (x *Client) IsInitialized() bool {
 // ListTools retrieves the list of available tools from the server
 func (x *Client) ListTools(ctx context.Context) (protocol.ListToolsResult, error) {
 	var result protocol.ListToolsResult
-	err := x.sendRequest(ctx, string(protocol.MethodListTools), nil, &result)
+	err := x.sendRequest(ctx, protocol.MethodListTools, nil, &result)
 	if err != nil {
 		return protocol.ListToolsResult{}, err
 	}
@@ -594,7 +589,7 @@ func (x *Client) ListTools(ctx context.Context) (protocol.ListToolsResult, error
 // CallTool executes a tool on the server
 func (x *Client) CallTool(ctx context.Context, request protocol.CallToolRequest) (protocol.CallToolResult, error) {
 	var result protocol.CallToolResult
-	err := x.sendRequest(ctx, string(protocol.MethodCallTool), request, &result)
+	err := x.sendRequest(ctx, protocol.MethodCallTool, request, &result)
 	if err != nil {
 		return protocol.CallToolResult{}, err
 	}
@@ -604,7 +599,7 @@ func (x *Client) CallTool(ctx context.Context, request protocol.CallToolRequest)
 // ListResources retrieves the list of available resources from the server
 func (x *Client) ListResources(ctx context.Context) (protocol.ListResourcesResult, error) {
 	var result protocol.ListResourcesResult
-	err := x.sendRequest(ctx, string(protocol.MethodListResources), nil, &result)
+	err := x.sendRequest(ctx, protocol.MethodListResources, nil, &result)
 	if err != nil {
 		return protocol.ListResourcesResult{}, err
 	}
@@ -614,7 +609,7 @@ func (x *Client) ListResources(ctx context.Context) (protocol.ListResourcesResul
 // ReadResource reads a resource from the server
 func (x *Client) ReadResource(ctx context.Context, request protocol.ReadResourceRequest) (protocol.ReadResourceResult, error) {
 	var result protocol.ReadResourceResult
-	err := x.sendRequest(ctx, string(protocol.MethodReadResource), request, &result)
+	err := x.sendRequest(ctx, protocol.MethodReadResource, request, &result)
 	if err != nil {
 		return protocol.ReadResourceResult{}, err
 	}
@@ -623,18 +618,18 @@ func (x *Client) ReadResource(ctx context.Context, request protocol.ReadResource
 
 // SubscribeResource subscribes to updates for a resource
 func (x *Client) SubscribeResource(ctx context.Context, request protocol.SubscribeRequest) error {
-	return x.sendRequest(ctx, string(protocol.MethodSubscribe), request, nil)
+	return x.sendRequest(ctx, protocol.MethodSubscribe, request, nil)
 }
 
 // UnsubscribeResource unsubscribes from updates for a resource
 func (x *Client) UnsubscribeResource(ctx context.Context, request protocol.UnsubscribeRequest) error {
-	return x.sendRequest(ctx, string(protocol.MethodUnsubscribe), request, nil)
+	return x.sendRequest(ctx, protocol.MethodUnsubscribe, request, nil)
 }
 
 // ListPrompts retrieves the list of available prompts from the server
 func (x *Client) ListPrompts(ctx context.Context) (protocol.ListPromptsResult, error) {
 	var result protocol.ListPromptsResult
-	err := x.sendRequest(ctx, string(protocol.MethodListPrompts), nil, &result)
+	err := x.sendRequest(ctx, protocol.MethodListPrompts, nil, &result)
 	if err != nil {
 		return protocol.ListPromptsResult{}, err
 	}
@@ -644,7 +639,7 @@ func (x *Client) ListPrompts(ctx context.Context) (protocol.ListPromptsResult, e
 // GetPrompt retrieves a prompt from the server
 func (x *Client) GetPrompt(ctx context.Context, request protocol.GetPromptRequest) (protocol.GetPromptResult, error) {
 	var result protocol.GetPromptResult
-	err := x.sendRequest(ctx, string(protocol.MethodGetPrompt), request, &result)
+	err := x.sendRequest(ctx, protocol.MethodGetPrompt, request, &result)
 	if err != nil {
 		return protocol.GetPromptResult{}, err
 	}
@@ -654,7 +649,7 @@ func (x *Client) GetPrompt(ctx context.Context, request protocol.GetPromptReques
 // ListRoots retrieves the list of available roots from the client
 func (x *Client) ListRoots(ctx context.Context) (protocol.ListRootsResult, error) {
 	var result protocol.ListRootsResult
-	err := x.sendRequest(ctx, string(protocol.MethodListRoots), nil, &result)
+	err := x.sendRequest(ctx, protocol.MethodListRoots, nil, &result)
 	if err != nil {
 		return protocol.ListRootsResult{}, err
 	}
@@ -664,7 +659,7 @@ func (x *Client) ListRoots(ctx context.Context) (protocol.ListRootsResult, error
 // CreateMessage requests a completion from the client's LLM
 func (x *Client) CreateMessage(ctx context.Context, request protocol.CreateMessageRequest) (protocol.CreateMessageResult, error) {
 	var result protocol.CreateMessageResult
-	err := x.sendRequest(ctx, string(protocol.MethodCreateMessage), request, &result)
+	err := x.sendRequest(ctx, protocol.MethodCreateMessage, request, &result)
 	if err != nil {
 		return protocol.CreateMessageResult{}, err
 	}

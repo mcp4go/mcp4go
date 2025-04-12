@@ -5,12 +5,15 @@ import "github.com/mcp4go/mcp4go/protocol"
 type EventBus struct {
 	PromptListChangedNotificationChan chan protocol.PromptListChangedNotification
 
-	ResourceUpdatedNotificationChan     chan protocol.ResourceUpdatedNotification
+	ResourceUpdatedNotificationChan chan protocol.ResourceUpdatedNotification
+
 	ResourceListChangedNotificationChan chan protocol.ResourceListChangedNotification
 
 	ToolListChangedNotificationChan chan protocol.ToolListChangedNotification
 
 	LoggingMessageNotificationChan chan protocol.LoggingMessageNotification
+
+	ProgressNotificationChan chan protocol.ProgressNotification
 }
 
 func NewEventBus() EventBus {
@@ -20,5 +23,6 @@ func NewEventBus() EventBus {
 		ResourceListChangedNotificationChan: make(chan protocol.ResourceListChangedNotification, 32),
 		ToolListChangedNotificationChan:     make(chan protocol.ToolListChangedNotification, 32),
 		LoggingMessageNotificationChan:      make(chan protocol.LoggingMessageNotification, 32),
+		ProgressNotificationChan:            make(chan protocol.ProgressNotification, 32),
 	}
 }

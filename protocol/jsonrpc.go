@@ -6,15 +6,15 @@ import (
 
 // JsonrpcRequest represents a request that expects a response
 // JsonrpcRequest 表示一个期望响应的请求
-type JsonrpcRequest struct {
-	// JSON-RPC version (JSON-RPC 版本)
-	Jsonrpc string `json:"jsonrpc"`
-	// Communication ID, can be string or integer (通信ID，可以是字符串或整数)
-	ID json.RawMessage `json:"id,omitempty"`
-	// Method to be called (调用的方法)
-	Method string `json:"method"`
-	// Parameters for the method (方法的参数)
-	Params json.RawMessage `json:"params"`
+type JsonrpcRequest JsonrpcPack
+
+func NewJsonrpcRequest(id json.RawMessage, method McpMethod, params json.RawMessage) *JsonrpcRequest {
+	return &JsonrpcRequest{
+		Jsonrpc: "2.0",
+		ID:      id,
+		Method:  method,
+		Params:  params,
+	}
 }
 
 // IsNotification checks if this request is a notification (which doesn't require a response)
@@ -31,14 +31,22 @@ func (x *JsonrpcRequest) GetID() json.RawMessage {
 
 // JsonrpcResponse represents a successful (non-error) response to a request
 // JsonrpcResponse 表示对请求的成功（非错误）响应
-type JsonrpcResponse struct {
+type JsonrpcResponse JsonrpcPack
+
+// JsonrpcPack represents a JSON-RPC packet
+// JsonrpcPack 表示一个 JSON-RPC 数据包
+type JsonrpcPack struct {
 	// JSON-RPC version (JSON-RPC 版本)
 	Jsonrpc string `json:"jsonrpc"`
-	// Response ID matching the request ID (响应ID，与请求ID相匹配)
-	ID json.RawMessage `json:"id"`
-	// Result of the method call (方法调用的结果)
+	// Communication ID, can be string or integer (通信ID，可以是字符串或整数)
+	ID json.RawMessage `json:"id,omitempty"`
+	// Method to be called (调用的方法) (only for request)
+	Method McpMethod `json:"method,omitempty"`
+	// Parameters for the method (方法的参数) (only for request)
+	Params json.RawMessage `json:"params,omitempty"`
+	// Result of the method call (方法调用的结果) (only for response)
 	Result json.RawMessage `json:"result,omitempty"`
-	// Error information, if any (错误信息，如果有的话)
+	// Error information, if any (错误信息，如果有的话) (only for response)
 	Error *JsonrpcError `json:"error,omitempty"`
 }
 
@@ -66,11 +74,14 @@ type JsonrpcError struct {
 
 // JsonrpcNotification represents a notification which does not expect a response
 // JsonrpcNotification 表示不需要响应的通知
-type JsonrpcNotification struct {
-	// JSON-RPC version (JSON-RPC 版本)
-	Jsonrpc string `json:"jsonrpc"`
-	// Method to be called (调用的方法)
-	Method string `json:"method"`
-	// Parameters for the method (方法的参数)
-	Params json.RawMessage `json:"params,omitempty"`
+type JsonrpcNotification JsonrpcPack
+
+// NewJsonrpcNotification creates a new JSON-RPC notification
+// NewJsonrpcNotification 创建一个新的 JSON-RPC 通知
+func NewJsonrpcNotification(method McpMethod, params json.RawMessage) *JsonrpcNotification {
+	return &JsonrpcNotification{
+		Jsonrpc: "2.0",
+		Method:  method,
+		Params:  params,
+	}
 }
