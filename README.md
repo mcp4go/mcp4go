@@ -40,7 +40,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -50,7 +49,6 @@ import (
 
 	"github.com/mcp4go/mcp4go/pkg/logger"
 	"github.com/mcp4go/mcp4go/protocol"
-	"github.com/mcp4go/mcp4go/protocol/jsonschema"
 	"github.com/mcp4go/mcp4go/server"
 	"github.com/mcp4go/mcp4go/server/iface"
 	"github.com/mcp4go/mcp4go/server/transport"
@@ -72,6 +70,10 @@ func main() {
 		cancel()
 	}()
 
+	type timeRequest struct {
+		TimeZone string `json:"time_zone,omitempty" description:"time zone default is Asia/Shanghai"`
+	}
+
 	// Create standard input/output transport layer
 	stdioTransport := transport.NewStdioTransport()
 	// Create MCP server and configure options
@@ -82,7 +84,33 @@ func main() {
 			Version: "0.1.0",
 		}),
 		server.WithInstructions("Welcome to Time MCP! This server provides Time tools."),
-		server.WithToolBuilder(newSimpleTimeBuilder()),
+		server.WithToolBuilder(iface.NewFunctionalToolsBuilder(
+			iface.NewFunctionalToolWrapper(
+				"time",
+				"get current time",
+				func(ctx context.Context, args timeRequest) ([]protocol.Content, error) {
+					if args.TimeZone == "" {
+						args.TimeZone = "Asia/Shanghai"
+					}
+
+					getTimezoneTime := func(_ context.Context, timeZone string) time.Time {
+						if timeZone == "" {
+							timeZone = "Asia/Shanghai"
+						}
+						loc, err := time.LoadLocation(timeZone)
+						if err != nil {
+							return time.Now()
+						}
+						return time.Now().In(loc)
+					}
+
+					currentTime := getTimezoneTime(ctx, args.TimeZone)
+
+					return []protocol.Content{
+						protocol.NewTextContent(fmt.Sprintf("current time is %s", currentTime), nil),
+					}, nil
+				}),
+		)),
 	)
 	if err != nil {
 		log.Printf("Failed to create server: %v\n", err)
@@ -98,75 +126,6 @@ func main() {
 	}
 
 	_logger.Logf(ctx, logger.LevelWarn, "Server shutdown complete")
-}
-
-type simpleTime struct {
-}
-
-func newSimpleTime() *simpleTime {
-	return &simpleTime{}
-}
-
-type timeRequest struct {
-	TimeZone string `json:"time_zone,omitempty" description:"time zone default is Asia/Shanghai"`
-}
-
-func (x *simpleTime) List(ctx context.Context, cursor string) ([]protocol.Tool, string, error) {
-	define, err := jsonschema.GenerateSchemaForType(timeRequest{})
-	if err != nil {
-		return nil, "", err
-	}
-	return []protocol.Tool{
-		{
-			Name:        "simple_time",
-			Description: "get current time",
-			InputSchema: define,
-		},
-	}, "", nil
-}
-
-func (x *simpleTime) Call(ctx context.Context, name string, argsJSON json.RawMessage) ([]protocol.Content, error) {
-	var args timeRequest
-	if err := json.Unmarshal(argsJSON, &args); err != nil {
-		return nil, err
-	}
-	if args.TimeZone == "" {
-		args.TimeZone = "Asia/Shanghai"
-	}
-	currentTime := x.getTimezoneTime(ctx, args.TimeZone)
-
-	return []protocol.Content{
-		protocol.NewTextContent(fmt.Sprintf("current time is %s", currentTime), nil),
-	}, nil
-}
-func (x *simpleTime) getTimezoneTime(_ context.Context, timeZone string) time.Time {
-	if timeZone == "" {
-		timeZone = "Asia/Shanghai"
-	}
-	loc, err := time.LoadLocation(timeZone)
-	if err != nil {
-		return time.Now()
-	}
-	return time.Now().In(loc)
-}
-
-func (x *simpleTime) StartWatchListChanged(ctx context.Context, uri string, ch chan<- protocol.ToolListChangedNotification) error {
-	return fmt.Errorf("not support")
-}
-
-type simpleTimeBuilder struct {
-}
-
-func newSimpleTimeBuilder() *simpleTimeBuilder {
-	return &simpleTimeBuilder{}
-}
-
-func (x *simpleTimeBuilder) Build() iface.ITool {
-	return newSimpleTime()
-}
-
-func (x *simpleTimeBuilder) ListChanged() bool {
-	return true
 }
 ```
 
