@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"io"
 	"runtime/debug"
-	"sync/atomic"
+	"sync"
+
+	"github.com/ccheers/xpkg/generic/arrayx"
+	"github.com/ccheers/xpkg/sync/errgroup"
 
 	"github.com/mcp4go/mcp4go/pkg/logger"
 	"github.com/mcp4go/mcp4go/protocol"
 	"github.com/mcp4go/mcp4go/server/iface"
-
-	"github.com/ccheers/xpkg/generic/arrayx"
-	"github.com/ccheers/xpkg/sync/errgroup"
 )
 
 type IRouter interface {
@@ -27,13 +27,33 @@ type IHandler interface {
 	Method() protocol.McpMethod
 }
 
+type IHandlerFunc func(ctx context.Context, message json.RawMessage) (json.RawMessage, error)
+
+type IHandlerFuncWrapper struct {
+	fn     IHandlerFunc
+	method protocol.McpMethod
+}
+
+func NewIHandlerFuncWrapper(fn IHandlerFunc, method protocol.McpMethod) *IHandlerFuncWrapper {
+	return &IHandlerFuncWrapper{fn: fn, method: method}
+}
+
+func (x *IHandlerFuncWrapper) Handle(ctx context.Context, message json.RawMessage) (json.RawMessage, error) {
+	return x.fn(ctx, message)
+}
+
+func (x *IHandlerFuncWrapper) Method() protocol.McpMethod {
+	return x.method
+}
+
 type Router struct {
 	log *logger.LogHelper
 
-	writePackCH chan *protocol.JsonrpcResponse
+	writePackCH chan *protocol.JsonrpcPack
 
-	handlers map[protocol.McpMethod]IHandler
-	bus      iface.EventBus
+	handlers      map[protocol.McpMethod]IHandler
+	bus           iface.EventBus
+	processingReq sync.Map
 }
 
 func NewIRouter(x *Router) IRouter {
@@ -41,23 +61,24 @@ func NewIRouter(x *Router) IRouter {
 }
 
 func NewRouter(list []IHandler, bus iface.EventBus, _logger logger.ILogger) (*Router, error) {
-	return &Router{
+	x := &Router{
 		log:         logger.NewLogHelper(_logger),
-		writePackCH: make(chan *protocol.JsonrpcResponse, 2048),
-		handlers: arrayx.BuildMap(list, func(t IHandler) protocol.McpMethod {
-			return t.Method()
-		}),
-		bus: bus,
-	}, nil
+		writePackCH: make(chan *protocol.JsonrpcPack, 2048),
+		handlers:    nil,
+		bus:         bus,
+	}
+
+	// add canceled handlers
+	list = append(list, NewIHandlerFuncWrapper(x.cancelHandler(), protocol.NotificationCancelled))
+
+	x.handlers = arrayx.BuildMap(list, func(t IHandler) protocol.McpMethod {
+		return t.Method()
+	})
+
+	return x, nil
 }
 
 func (x *Router) Handle(ctx context.Context, reader io.Reader, writer io.Writer) error {
-	id := uint32(0)
-	incrID := func() json.RawMessage {
-		newID := atomic.AddUint32(&id, 1)
-		bs, _ := json.Marshal(newID)
-		return bs
-	}
 	eg := errgroup.WithCancel(ctx)
 	eg.Go(func(ctx context.Context) error {
 		return x.readLoop(ctx, reader)
@@ -72,7 +93,7 @@ func (x *Router) Handle(ctx context.Context, reader io.Reader, writer io.Writer)
 				return nil
 			case msg := <-x.bus.PromptListChangedNotificationChan:
 				bs, _ := json.Marshal(msg)
-				x.writePackCH <- protocol.NewJsonrpcResponse(incrID(), bs, nil)
+				x.writePackCH <- (*protocol.JsonrpcPack)(protocol.NewJsonrpcNotification(protocol.NotificationPromptsListChanged, bs))
 			}
 		}
 	})
@@ -83,7 +104,7 @@ func (x *Router) Handle(ctx context.Context, reader io.Reader, writer io.Writer)
 				return nil
 			case msg := <-x.bus.ResourceUpdatedNotificationChan:
 				bs, _ := json.Marshal(msg)
-				x.writePackCH <- protocol.NewJsonrpcResponse(incrID(), bs, nil)
+				x.writePackCH <- (*protocol.JsonrpcPack)(protocol.NewJsonrpcNotification(protocol.NotificationResourcesUpdated, bs))
 			}
 		}
 	})
@@ -94,7 +115,7 @@ func (x *Router) Handle(ctx context.Context, reader io.Reader, writer io.Writer)
 				return nil
 			case msg := <-x.bus.ResourceListChangedNotificationChan:
 				bs, _ := json.Marshal(msg)
-				x.writePackCH <- protocol.NewJsonrpcResponse(incrID(), bs, nil)
+				x.writePackCH <- (*protocol.JsonrpcPack)(protocol.NewJsonrpcNotification(protocol.NotificationResourcesListChanged, bs))
 			}
 		}
 	})
@@ -105,7 +126,7 @@ func (x *Router) Handle(ctx context.Context, reader io.Reader, writer io.Writer)
 				return nil
 			case msg := <-x.bus.ToolListChangedNotificationChan:
 				bs, _ := json.Marshal(msg)
-				x.writePackCH <- protocol.NewJsonrpcResponse(incrID(), bs, nil)
+				x.writePackCH <- (*protocol.JsonrpcPack)(protocol.NewJsonrpcNotification(protocol.NotificationToolsListChanged, bs))
 			}
 		}
 	})
@@ -116,7 +137,18 @@ func (x *Router) Handle(ctx context.Context, reader io.Reader, writer io.Writer)
 				return nil
 			case msg := <-x.bus.LoggingMessageNotificationChan:
 				bs, _ := json.Marshal(msg)
-				x.writePackCH <- protocol.NewJsonrpcResponse(incrID(), bs, nil)
+				x.writePackCH <- (*protocol.JsonrpcPack)(protocol.NewJsonrpcNotification(protocol.NotificationLoggingMessage, bs))
+			}
+		}
+	})
+	eg.Go(func(ctx context.Context) error {
+		for {
+			select {
+			case <-ctx.Done():
+				return nil
+			case msg := <-x.bus.ProgressNotificationChan:
+				bs, _ := json.Marshal(msg)
+				x.writePackCH <- (*protocol.JsonrpcPack)(protocol.NewJsonrpcNotification(protocol.NotificationProgress, bs))
 			}
 		}
 	})
@@ -138,6 +170,7 @@ func (x *Router) readLoop(ctx context.Context, reader io.Reader) error {
 					x.log.Errorf(ctx, "[Router][handle] panic: %v, stack:\n%s\n", r, debug.Stack())
 				}
 			}()
+
 			var req protocol.JsonrpcRequest
 			err := decoder.Decode(&req)
 			if err != nil {
@@ -145,27 +178,46 @@ func (x *Router) readLoop(ctx context.Context, reader io.Reader) error {
 			}
 
 			x.log.Debugf(ctx, "#%s. method[%s] params[%s]\n", req.GetID(), req.Method, string(req.Params))
+			go func() {
+				defer func() {
+					if r := recover(); r != nil {
+						x.log.Errorf(ctx, "[Router][handle] panic: %v, stack:\n%s\n", r, debug.Stack())
+					}
+				}()
 
-			respBs, err := x.handle(ctx, &req)
-			if err != nil {
-				x.log.Errorf(ctx, "handle error: %v\n", err)
-			}
-			if req.IsNotification() {
-				return nil
-			}
-			if err != nil {
-				code := int64(-1)
-				if errCode, ok := err.(interface{ Code() int64 }); ok {
-					code = errCode.Code()
+				//nolint:govet
+				ctx, cancel := context.WithCancel(ctx)
+				defer cancel()
+
+				// add cancel callback
+				x.processingReq.Store(string(req.GetID()), cancel)
+				defer x.processingReq.Delete(string(req.GetID()))
+
+				respBs, err := x.handle(ctx, &req)
+				if err != nil {
+					x.log.Errorf(ctx, "handle error: %v\n", err)
 				}
-				x.writePackCH <- protocol.NewJsonrpcResponse(req.GetID(), nil, &protocol.JsonrpcError{
-					Code:    code,
-					Message: err.Error(),
-					Data:    nil,
-				})
-				return nil
-			}
-			x.writePackCH <- protocol.NewJsonrpcResponse(req.GetID(), respBs, nil)
+				if req.IsNotification() {
+					return
+				}
+				if err != nil {
+					code := int64(-1)
+					if errCode, ok := err.(interface{ Code() int64 }); ok {
+						code = errCode.Code()
+					}
+					x.writePackCH <- (*protocol.JsonrpcPack)(
+						protocol.NewJsonrpcResponse(req.GetID(), nil, &protocol.JsonrpcError{
+							Code:    code,
+							Message: err.Error(),
+							Data:    nil,
+						}),
+					)
+					return
+				}
+				x.writePackCH <- (*protocol.JsonrpcPack)(
+					protocol.NewJsonrpcResponse(req.GetID(), respBs, nil),
+				)
+			}()
 			return nil
 		}()
 		if err != nil {
@@ -193,14 +245,29 @@ func (x *Router) writeLoop(ctx context.Context, writer io.Writer) error {
 
 func (x *Router) handle(ctx context.Context, req *protocol.JsonrpcRequest) (json.RawMessage, error) {
 	// handle request
-	handler, ok := x.handlers[protocol.McpMethod(req.Method)]
+	handler, ok := x.handlers[req.Method]
 	if !ok {
 		return x.notFoundHandleFunc(ctx, req.Method, req.Params)
 	}
 	return handler.Handle(ctx, req.Params)
 }
 
-func (x *Router) notFoundHandleFunc(ctx context.Context, method string, message json.RawMessage) (json.RawMessage, error) {
+func (x *Router) notFoundHandleFunc(ctx context.Context, method protocol.McpMethod, message json.RawMessage) (json.RawMessage, error) {
 	x.log.Errorf(ctx, "method(%s) not found, message=%s", method, message)
 	return nil, fmt.Errorf("method(%s) not found", method)
+}
+
+func (x *Router) cancelHandler() IHandlerFunc {
+	return func(_ context.Context, message json.RawMessage) (json.RawMessage, error) {
+		var req protocol.CancelRequest
+		err := json.Unmarshal(message, &req)
+		if err != nil {
+			return nil, err
+		}
+		cancel, ok := x.processingReq.Load(string(req.ID))
+		if ok {
+			cancel.(context.CancelFunc)()
+		}
+		return nil, nil
+	}
 }

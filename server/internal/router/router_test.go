@@ -148,8 +148,8 @@ func TestNewRouter(t *testing.T) {
 	}
 
 	// 验证处理程序是否正确注册
-	if len(router.handlers) != 2 {
-		t.Errorf("Expected 2 handlers, got %d", len(router.handlers))
+	if len(router.handlers) != 3 {
+		t.Errorf("Expected 3 handlers, got %d", len(router.handlers))
 	}
 
 	// 验证处理程序映射是否正确

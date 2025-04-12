@@ -8,7 +8,7 @@ import (
 
 var Provider = wire.NewSet(
 	NewIHandlers,
-	NewInitializedHandler, NewShutdownHandler, NewCancelHandler, NewProgressNotificationHandler,
+	NewInitializedHandler,
 	NewListPromptsHandler, NewGetPromptHandler,
 	NewListResourcesHandler, NewReadResourceHandler, NewListResourceTemplatesHandler, NewSubscribeHandler, NewUnsubscribeHandler,
 	NewListToolsHandler, NewCallToolHandler,
@@ -17,8 +17,6 @@ var Provider = wire.NewSet(
 func NewIHandlers(
 	initializeHandler *InitializeHandler,
 	initializedHandler *InitializedHandler,
-	shutdownHandler *ShutdownHandler,
-	cancelHandler *CancelHandler,
 	setLevelHandler *SetLevelHandler,
 	listPromptsHandler *ListPromptsHandler,
 	getPromptHandler *GetPromptHandler,
@@ -34,8 +32,6 @@ func NewIHandlers(
 	return []router.IHandler{
 		initializeHandler,
 		initializedHandler,
-		shutdownHandler,
-		cancelHandler,
 		setLevelHandler,
 		listPromptsHandler,
 		getPromptHandler,
