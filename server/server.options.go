@@ -7,6 +7,7 @@ import (
 	"github.com/mcp4go/mcp4go/pkg/logger"
 	"github.com/mcp4go/mcp4go/protocol"
 	"github.com/mcp4go/mcp4go/server/iface"
+	"github.com/mcp4go/mcp4go/server/internal/handlers"
 )
 
 // defaultOptions returns a new options struct with default values
@@ -21,6 +22,9 @@ func defaultOptions() options {
 		resourceBuilder: &dummyIResourceBuilder{},
 		promptBuilder:   &dummyIPromptBuilder{},
 		toolBuilder:     &dummyIToolBuilder{},
+		requestDecodeFn: func(data json.RawMessage, v any) error {
+			return json.Unmarshal(data, v)
+		},
 	}
 }
 
@@ -74,6 +78,13 @@ func WithPromptBuilder(prompt iface.IPromptBuilder) OptionFunc {
 func WithToolBuilder(tool iface.IToolBuilder) OptionFunc {
 	return func(o *options) {
 		o.toolBuilder = tool
+	}
+}
+
+// WithRequestDecodeFunc sets the request decode function
+func WithRequestDecodeFunc(fn handlers.RequestDecodeFunc) OptionFunc {
+	return func(o *options) {
+		o.requestDecodeFn = fn
 	}
 }
 

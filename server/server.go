@@ -16,6 +16,8 @@ type options struct {
 	serverInfo   protocol.Implementation
 	instructions string
 
+	requestDecodeFn handlers.RequestDecodeFunc
+
 	logger logger.ILogger
 
 	resourceBuilder iface.IResourceBuilder
@@ -63,12 +65,14 @@ func (x *Server) Run(ctx context.Context) error {
 				},
 				x.options.serverInfo,
 				x.options.instructions,
+				x.options.requestDecodeFn,
 			),
-			handlers.NewSetLevelHandler(),
+			handlers.NewSetLevelHandler(x.options.requestDecodeFn),
 			x.options.resourceBuilder.Build(),
 			x.options.promptBuilder.Build(),
 			x.options.toolBuilder.Build(),
 			iface.NewEventBus(),
+			x.options.requestDecodeFn,
 		)
 		if err != nil {
 			return fmt.Errorf("failed to initialize router: %w", err)

@@ -12,17 +12,21 @@ import (
 // Handle resources/list request
 type ListResourcesHandler struct {
 	resource iface.IResource
+	decodeFn RequestDecodeFunc
 }
 
 // Create a new instance
-func NewListResourcesHandler(resource iface.IResource) *ListResourcesHandler {
-	return &ListResourcesHandler{resource: resource}
+func NewListResourcesHandler(resource iface.IResource, decodeFn RequestDecodeFunc) *ListResourcesHandler {
+	return &ListResourcesHandler{
+		resource: resource,
+		decodeFn: decodeFn,
+	}
 }
 
 // Handle resources/list request
 func (x *ListResourcesHandler) Handle(ctx context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.ListResourcesRequest
-	err := json.Unmarshal(message, &req)
+	err := x.decodeFn(message, &req)
 	if err != nil {
 		return nil, err
 	}
@@ -49,19 +53,22 @@ func (x *ListResourcesHandler) Method() protocol.McpMethod {
 // Handle resources/read request
 type ReadResourceHandler struct {
 	resource iface.IResource
+
+	decodeFn RequestDecodeFunc
 }
 
 // Create a new instance
-func NewReadResourceHandler(resource iface.IResource) *ReadResourceHandler {
+func NewReadResourceHandler(resource iface.IResource, decodeFn RequestDecodeFunc) *ReadResourceHandler {
 	return &ReadResourceHandler{
 		resource: resource,
+		decodeFn: decodeFn,
 	}
 }
 
 // Handle resources/read request
 func (x *ReadResourceHandler) Handle(ctx context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.ReadResourceRequest
-	err := json.Unmarshal(message, &req)
+	err := x.decodeFn(message, &req)
 	if err != nil {
 		return nil, err
 	}
@@ -87,19 +94,22 @@ func (x *ReadResourceHandler) Method() protocol.McpMethod {
 // Handle resources/templates/list request
 type ListResourceTemplatesHandler struct {
 	resource iface.IResource
+
+	decodeFn RequestDecodeFunc
 }
 
 // Create a new instance
-func NewListResourceTemplatesHandler(resource iface.IResource) *ListResourceTemplatesHandler {
+func NewListResourceTemplatesHandler(resource iface.IResource, decodeFn RequestDecodeFunc) *ListResourceTemplatesHandler {
 	return &ListResourceTemplatesHandler{
 		resource: resource,
+		decodeFn: decodeFn,
 	}
 }
 
 // Handle resources/templates/list request
 func (x *ListResourceTemplatesHandler) Handle(_ context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.ListResourceTemplatesRequest
-	err := json.Unmarshal(message, &req)
+	err := x.decodeFn(message, &req)
 	if err != nil {
 		return nil, err
 	}
@@ -123,24 +133,27 @@ func (x *ListResourceTemplatesHandler) Method() protocol.McpMethod {
 type SubscribeHandler struct {
 	resource iface.IResource
 	ch       chan<- protocol.ResourceUpdatedNotification
+	decodeFn RequestDecodeFunc
 }
 
 // Create a new instance
 func NewSubscribeHandler(
 	resource iface.IResource,
 	bus iface.EventBus,
+	decodeFn RequestDecodeFunc,
 ) *SubscribeHandler {
 	//nolint:whitespace
 	return &SubscribeHandler{
 		resource: resource,
 		ch:       bus.ResourceUpdatedNotificationChan,
+		decodeFn: decodeFn,
 	}
 }
 
 // Handle resources/subscribe request
 func (x *SubscribeHandler) Handle(ctx context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.SubscribeRequest
-	err := json.Unmarshal(message, &req)
+	err := x.decodeFn(message, &req)
 	if err != nil {
 		return nil, err
 	}
@@ -163,17 +176,21 @@ func (x *SubscribeHandler) Method() protocol.McpMethod {
 // Handle resources/unsubscribe request
 type UnsubscribeHandler struct {
 	resource iface.IResource
+	decodeFn RequestDecodeFunc
 }
 
 // Create a new instance
-func NewUnsubscribeHandler(resource iface.IResource) *UnsubscribeHandler {
-	return &UnsubscribeHandler{resource: resource}
+func NewUnsubscribeHandler(resource iface.IResource, decodeFn RequestDecodeFunc) *UnsubscribeHandler {
+	return &UnsubscribeHandler{
+		resource: resource,
+		decodeFn: decodeFn,
+	}
 }
 
 // Handle resources/unsubscribe request
 func (x *UnsubscribeHandler) Handle(ctx context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.UnsubscribeRequest
-	err := json.Unmarshal(message, &req)
+	err := x.decodeFn(message, &req)
 	if err != nil {
 		return nil, err
 	}

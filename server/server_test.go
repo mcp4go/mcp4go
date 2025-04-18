@@ -279,6 +279,12 @@ func TestServerOptions(t *testing.T) {
 		WithResourceBuilder(resourceBuilder),
 		WithPromptBuilder(promptBuilder),
 		WithToolBuilder(toolBuilder),
+		WithRequestDecodeFunc(func(data json.RawMessage, v any) error {
+			if len(data) == 0 {
+				return nil
+			}
+			return json.Unmarshal(data, v)
+		}),
 	)
 	if err != nil {
 		t.Fatalf("Failed to create server: %v", err)

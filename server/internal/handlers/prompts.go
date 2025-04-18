@@ -11,18 +11,22 @@ import (
 
 // Handle prompts/list request
 type ListPromptsHandler struct {
-	prompt iface.IPrompt
+	prompt   iface.IPrompt
+	decodeFn RequestDecodeFunc
 }
 
 // Create a new instance
-func NewListPromptsHandler(prompt iface.IPrompt) *ListPromptsHandler {
-	return &ListPromptsHandler{prompt: prompt}
+func NewListPromptsHandler(prompt iface.IPrompt, decodeFn RequestDecodeFunc) *ListPromptsHandler {
+	return &ListPromptsHandler{
+		prompt:   prompt,
+		decodeFn: decodeFn,
+	}
 }
 
 // Handle prompts/list request
 func (x *ListPromptsHandler) Handle(ctx context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.ListPromptsRequest
-	err := json.Unmarshal(message, &req)
+	err := x.decodeFn(message, &req)
 	if err != nil {
 		return nil, err
 	}
@@ -47,18 +51,22 @@ func (x *ListPromptsHandler) Method() protocol.McpMethod {
 
 // Handle prompts/get request
 type GetPromptHandler struct {
-	prompt iface.IPrompt
+	prompt   iface.IPrompt
+	decodeFn RequestDecodeFunc
 }
 
 // Create a new instance
-func NewGetPromptHandler(prompt iface.IPrompt) *GetPromptHandler {
-	return &GetPromptHandler{prompt: prompt}
+func NewGetPromptHandler(prompt iface.IPrompt, decodeFn RequestDecodeFunc) *GetPromptHandler {
+	return &GetPromptHandler{
+		prompt:   prompt,
+		decodeFn: decodeFn,
+	}
 }
 
 // Handle prompts/get request
 func (x *GetPromptHandler) Handle(ctx context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.GetPromptRequest
-	err := json.Unmarshal(message, &req)
+	err := x.decodeFn(message, &req)
 	if err != nil {
 		return nil, err
 	}

@@ -12,6 +12,7 @@ type InitializeHandler struct {
 	serverCapabilities protocol.ServerCapabilities
 	serverInfo         protocol.Implementation
 	instructions       string
+	decodeFn           RequestDecodeFunc
 }
 
 // NewInitializeHandler creates a new InitializeHandler instance
@@ -19,19 +20,21 @@ func NewInitializeHandler(
 	serverCapabilities protocol.ServerCapabilities,
 	serverInfo protocol.Implementation,
 	instructions string,
+	decodeFn RequestDecodeFunc,
 ) *InitializeHandler {
 	//nolint:whitespace
 	return &InitializeHandler{
 		serverCapabilities: serverCapabilities,
 		serverInfo:         serverInfo,
 		instructions:       instructions,
+		decodeFn:           decodeFn,
 	}
 }
 
 // Handle processes initialize requests
 func (x *InitializeHandler) Handle(_ context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.InitializeRequest
-	err := json.Unmarshal(message, &req)
+	err := x.decodeFn(message, &req)
 	if err != nil {
 		return nil, err
 	}

@@ -11,18 +11,22 @@ import (
 
 // Handle tools/list request
 type ListToolsHandler struct {
-	tool iface.ITool
+	tool     iface.ITool
+	decodeFn RequestDecodeFunc
 }
 
 // Create a new instance
-func NewListToolsHandler(tool iface.ITool) *ListToolsHandler {
-	return &ListToolsHandler{tool: tool}
+func NewListToolsHandler(tool iface.ITool, decodeFn RequestDecodeFunc) *ListToolsHandler {
+	return &ListToolsHandler{
+		tool:     tool,
+		decodeFn: decodeFn,
+	}
 }
 
 // Handle tools/list request
 func (x *ListToolsHandler) Handle(ctx context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.ListToolsRequest
-	err := json.Unmarshal(message, &req)
+	err := x.decodeFn(message, &req)
 	if err != nil {
 		return nil, err
 	}
@@ -47,18 +51,22 @@ func (x *ListToolsHandler) Method() protocol.McpMethod {
 
 // Handle tools/call request
 type CallToolHandler struct {
-	tool iface.ITool
+	tool     iface.ITool
+	decodeFn RequestDecodeFunc
 }
 
 // Create a new instance
-func NewCallToolHandler(tool iface.ITool) *CallToolHandler {
-	return &CallToolHandler{tool: tool}
+func NewCallToolHandler(tool iface.ITool, decodeFn RequestDecodeFunc) *CallToolHandler {
+	return &CallToolHandler{
+		tool:     tool,
+		decodeFn: decodeFn,
+	}
 }
 
 // Handle tools/call request
 func (x *CallToolHandler) Handle(ctx context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.CallToolRequest
-	err := json.Unmarshal(message, &req)
+	err := x.decodeFn(message, &req)
 	if err != nil {
 		return nil, err
 	}
