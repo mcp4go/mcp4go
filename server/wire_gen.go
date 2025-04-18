@@ -15,17 +15,17 @@ import (
 
 // Injectors from wire.go:
 
-func initRouter(iLogger logger.ILogger, initializeHandler *handlers.InitializeHandler, setLevelHandler *handlers.SetLevelHandler, iResource iface.IResource, iPrompt iface.IPrompt, iTool iface.ITool, eventBus iface.EventBus) (router.IRouter, error) {
+func initRouter(iLogger logger.ILogger, initializeHandler *handlers.InitializeHandler, setLevelHandler *handlers.SetLevelHandler, iResource iface.IResource, iPrompt iface.IPrompt, iTool iface.ITool, eventBus iface.EventBus, requestDecodeFunc handlers.RequestDecodeFunc) (router.IRouter, error) {
 	initializedHandler := handlers.NewInitializedHandler()
-	listPromptsHandler := handlers.NewListPromptsHandler(iPrompt)
-	getPromptHandler := handlers.NewGetPromptHandler(iPrompt)
-	listResourcesHandler := handlers.NewListResourcesHandler(iResource)
-	readResourceHandler := handlers.NewReadResourceHandler(iResource)
-	listResourceTemplatesHandler := handlers.NewListResourceTemplatesHandler(iResource)
-	subscribeHandler := handlers.NewSubscribeHandler(iResource, eventBus)
-	unsubscribeHandler := handlers.NewUnsubscribeHandler(iResource)
-	listToolsHandler := handlers.NewListToolsHandler(iTool)
-	callToolHandler := handlers.NewCallToolHandler(iTool)
+	listPromptsHandler := handlers.NewListPromptsHandler(iPrompt, requestDecodeFunc)
+	getPromptHandler := handlers.NewGetPromptHandler(iPrompt, requestDecodeFunc)
+	listResourcesHandler := handlers.NewListResourcesHandler(iResource, requestDecodeFunc)
+	readResourceHandler := handlers.NewReadResourceHandler(iResource, requestDecodeFunc)
+	listResourceTemplatesHandler := handlers.NewListResourceTemplatesHandler(iResource, requestDecodeFunc)
+	subscribeHandler := handlers.NewSubscribeHandler(iResource, eventBus, requestDecodeFunc)
+	unsubscribeHandler := handlers.NewUnsubscribeHandler(iResource, requestDecodeFunc)
+	listToolsHandler := handlers.NewListToolsHandler(iTool, requestDecodeFunc)
+	callToolHandler := handlers.NewCallToolHandler(iTool, requestDecodeFunc)
 	v := handlers.NewIHandlers(initializeHandler, initializedHandler, setLevelHandler, listPromptsHandler, getPromptHandler, listResourcesHandler, readResourceHandler, listResourceTemplatesHandler, subscribeHandler, unsubscribeHandler, listToolsHandler, callToolHandler)
 	routerRouter, err := router.NewRouter(v, eventBus, iLogger)
 	if err != nil {

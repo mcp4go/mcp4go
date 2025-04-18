@@ -1,10 +1,14 @@
 package handlers
 
 import (
+	"encoding/json"
+
 	"github.com/google/wire"
 
 	"github.com/mcp4go/mcp4go/server/internal/router"
 )
+
+type RequestDecodeFunc func(data json.RawMessage, v any) error
 
 var Provider = wire.NewSet(
 	NewIHandlers,

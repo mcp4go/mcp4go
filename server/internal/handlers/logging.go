@@ -12,19 +12,21 @@ import (
 type SetLevelHandler struct {
 	// Current log level
 	currentLevel protocol.LoggingLevel
+	decodeFn     RequestDecodeFunc
 }
 
 // Create a new instance
-func NewSetLevelHandler() *SetLevelHandler {
+func NewSetLevelHandler(decodeFn RequestDecodeFunc) *SetLevelHandler {
 	return &SetLevelHandler{
 		currentLevel: protocol.LoggingLevelInfo, // Default log level is Info
+		decodeFn:     decodeFn,
 	}
 }
 
 // Handle logging/setLevel request
 func (x *SetLevelHandler) Handle(_ context.Context, message json.RawMessage) (json.RawMessage, error) {
 	var req protocol.SetLevelRequest
-	err := json.Unmarshal(message, &req)
+	err := x.decodeFn(message, &req)
 	if err != nil {
 		return nil, err
 	}
