@@ -3,6 +3,7 @@ package router
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"runtime/debug"
@@ -243,7 +244,14 @@ func (x *Router) writeLoop(ctx context.Context, writer io.Writer) error {
 	}
 }
 
-func (x *Router) handle(ctx context.Context, req *protocol.JsonrpcRequest) (json.RawMessage, error) {
+func (x *Router) handle(ctx context.Context, req *protocol.JsonrpcRequest) (resp json.RawMessage, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			msg := fmt.Sprintf("[Router][handle] panic: %v, stack:\n%s\n", r, debug.Stack())
+			x.log.Errorf(ctx, msg)
+			err = errors.New(msg)
+		}
+	}()
 	// handle request
 	handler, ok := x.handlers[req.Method]
 	if !ok {
