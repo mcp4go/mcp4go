@@ -17,7 +17,7 @@ func TestDefinition_MarshalJSON(t *testing.T) {
 		{
 			name: "Test with empty Definition",
 			def:  jsonschema.Definition{},
-			want: `{}`,
+			want: `{"properties":{},"required":null}`,
 		},
 		{
 			name: "Test with Definition properties set",
@@ -35,9 +35,12 @@ func TestDefinition_MarshalJSON(t *testing.T) {
    "description":"A string type",
    "properties":{
       "name":{
-         "type":"string"
+         "type":"string",
+		 "properties":{},
+         "required":null
       }
-   }
+   },
+   "required":null
 }`,
 		},
 		{
@@ -60,15 +63,17 @@ func TestDefinition_MarshalJSON(t *testing.T) {
 			},
 			want: `{
    "type":"object",
+   "required":null,
    "properties":{
       "user":{
          "type":"object",
+		 "required":null,
          "properties":{
             "name":{
-               "type":"string"
+               "type":"string","properties":{},"required":null
             },
             "age":{
-               "type":"integer"
+               "type":"integer","properties":{},"required":null
             }
          }
       }
@@ -106,24 +111,27 @@ func TestDefinition_MarshalJSON(t *testing.T) {
 			},
 			want: `{
    "type":"object",
+   "required":null,
    "properties":{
       "user":{
          "type":"object",
+		 "required":null,
          "properties":{
             "name":{
-               "type":"string"
+               "type":"string","properties":{},"required":null
             },
             "age":{
-               "type":"integer"
+               "type":"integer","properties":{},"required":null
             },
             "address":{
                "type":"object",
+			   "required":null,
                "properties":{
                   "city":{
-                     "type":"string"
+                     "type":"string","properties":{},"required":null
                   },
                   "country":{
-                     "type":"string"
+                     "type":"string","properties":{},"required":null
                   }
                }
             }
@@ -148,11 +156,12 @@ func TestDefinition_MarshalJSON(t *testing.T) {
 			want: `{
    "type":"array",
    "items":{
-      "type":"string"
+      "type":"string","properties":{},"required":null
    },
+   "required":null,
    "properties":{
       "name":{
-         "type":"string"
+         "type":"string","properties":{},"required":null
       }
    }
 }`,

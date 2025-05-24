@@ -22,7 +22,8 @@ func TestMarshalTools(t *testing.T) {
 			},
 		},
 	})
-	if string(bs) != "{\"name\":\"\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"foo\":{\"type\":\"string\"}}}}" {
+	//nolint:lll
+	if string(bs) != "{\"name\":\"\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"foo\":{\"type\":\"string\",\"properties\":{},\"required\":null}},\"required\":null}}" {
 		t.Errorf("unexpected json: %s", string(bs))
 	}
 	bs, _ = json.Marshal(Tool{
@@ -32,7 +33,7 @@ func TestMarshalTools(t *testing.T) {
 			Type: jsonschema.Object,
 		},
 	})
-	if string(bs) != "{\"name\":\"\",\"inputSchema\":{\"type\":\"object\"}}" {
+	if string(bs) != "{\"name\":\"\",\"inputSchema\":{\"type\":\"object\",\"properties\":{},\"required\":null}}" {
 		t.Errorf("unexpected json: %s", string(bs))
 	}
 }

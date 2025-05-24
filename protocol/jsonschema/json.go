@@ -31,9 +31,9 @@ type Definition struct {
 	// one element, where each element is unique. You will probably only use this with strings.
 	Enum []string `json:"enum,omitempty"`
 	// Properties describes the properties of an object, if the schema type is Object.
-	Properties map[string]Definition `json:"properties,omitempty"`
+	Properties map[string]Definition `json:"properties"`
 	// Required specifies which properties are required, if the schema type is Object.
-	Required []string `json:"required,omitempty"`
+	Required []string `json:"required"`
 	// Items specifies which data type an array contains, if the schema type is Array.
 	Items *Definition `json:"items,omitempty"`
 	// AdditionalProperties is used to control the handling of properties in an object
