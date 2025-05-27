@@ -64,6 +64,8 @@ func NewJsonrpcResponse(id json.RawMessage, result json.RawMessage, errInfo *Jso
 // JsonrpcError represents an error response to a JSON-RPC request
 // JsonrpcError 表示对 JSON-RPC 请求的错误响应
 type JsonrpcError struct {
+	// Communication ID, can be string or integer (通信ID，可以是字符串或整数)
+	ID json.RawMessage `json:"id,omitempty"`
 	// Error code (错误代码)
 	Code int64 `json:"code"`
 	// Short description of the error (错误的简短描述)

@@ -183,9 +183,6 @@ func NewClient(t transport.ITransport, opts ...Option) (*Client, func(), error) 
 
 // Connect establishes a connection to the server and initializes it
 func (x *Client) Connect(ctx context.Context) error {
-	x.mu.Lock()
-	defer x.mu.Unlock()
-
 	// Create a cancellable context
 	ctx, cancel := context.WithCancel(ctx)
 	x.eg = errgroup.WithCancel(ctx)
@@ -259,13 +256,13 @@ func (x *Client) readLoop(ctx context.Context, reader io.Reader) {
 }
 
 func (x *Client) writeLoop(ctx context.Context, writer io.Writer) {
-	encoder := json.NewEncoder(writer)
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case req := <-x.writeChan:
-			if err := encoder.Encode(req); err != nil {
+			bs, _ := json.Marshal(req)
+			if _, err := writer.Write(bs); err != nil {
 				x.log.Errorf(ctx, "Error encoding request: %v\n", err)
 			}
 		}
@@ -378,7 +375,7 @@ func (x *Client) handleMessage(ctx context.Context, message json.RawMessage) {
 	// Try to parse as a response
 	var response protocol.JsonrpcResponse
 	x.log.Errorf(ctx, "handleMessage: %s", string(message))
-	if err := json.Unmarshal(message, &response); err == nil && response.ID != nil && len(response.Result) > 0 {
+	if err := json.Unmarshal(message, &response); err == nil && response.ID != nil {
 		x.handleResponse(ctx, &response)
 		return
 	}
@@ -449,6 +446,8 @@ func (x *Client) sendRequest(ctx context.Context, method protocol.McpMethod, par
 		if err != nil {
 			return fmt.Errorf("failed to marshal params: %w", err)
 		}
+	} else {
+		paramsBytes = json.RawMessage("{}")
 	}
 
 	idBs, _ := json.Marshal(id)
@@ -472,7 +471,6 @@ func (x *Client) sendRequest(ctx context.Context, method protocol.McpMethod, par
 	if err != nil {
 		return fmt.Errorf("failed to marshal request: %w", err)
 	}
-	x.log.Debugf(ctx, "Sending request:", string(requestBytes))
 
 	select {
 	case x.writeChan <- requestBytes:

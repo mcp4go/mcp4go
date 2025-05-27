@@ -62,6 +62,8 @@ func GenerateSchemaForType(v any) (*Definition, error) {
 
 func reflectSchema(t reflect.Type) (*Definition, error) {
 	var d Definition
+	d.Required = make([]string, 0)
+	d.Properties = make(map[string]Definition)
 	switch t.Kind() {
 	case reflect.String:
 		d.Type = String
@@ -108,7 +110,7 @@ func reflectSchemaObject(t reflect.Type) (*Definition, error) {
 		AdditionalProperties: false,
 	}
 	properties := make(map[string]Definition)
-	var requiredFields []string
+	requiredFields := make([]string, 0)
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		if !field.IsExported() {
