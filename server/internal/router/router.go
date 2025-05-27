@@ -233,10 +233,9 @@ func (x *Router) writeLoop(ctx context.Context, writer io.Writer) error {
 		case <-ctx.Done():
 			return ctx.Err()
 		case pack := <-x.writePackCH:
-			encoder := json.NewEncoder(writer)
 			bs, _ := json.Marshal(pack)
 			x.log.Debugf(ctx, "write response: %+v\n", string(bs))
-			err := encoder.Encode(pack)
+			_, err := writer.Write(bs)
 			if err != nil {
 				return err
 			}
