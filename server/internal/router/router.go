@@ -235,6 +235,7 @@ func (x *Router) writeLoop(ctx context.Context, writer io.Writer) error {
 		case pack := <-x.writePackCH:
 			bs, _ := json.Marshal(pack)
 			x.log.Debugf(ctx, "write response: %+v\n", string(bs))
+			bs = append(bs, '\n')
 			_, err := writer.Write(bs)
 			if err != nil {
 				return err

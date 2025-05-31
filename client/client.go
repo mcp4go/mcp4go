@@ -262,6 +262,7 @@ func (x *Client) writeLoop(ctx context.Context, writer io.Writer) {
 			return
 		case req := <-x.writeChan:
 			bs, _ := json.Marshal(req)
+			bs = append(bs, '\n')
 			if _, err := writer.Write(bs); err != nil {
 				x.log.Errorf(ctx, "Error encoding request: %v\n", err)
 			}
